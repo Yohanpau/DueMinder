@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import DueMinderAIUI from "./dueminder.conversation";
+import EmailReminderHandler from "./EmailReminderHandler";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 // Function for bill cards
 function BillCard({ bill, onEdit, onDelete }) {
   const [showMenu, setShowMenu] = useState(false);
 
   return (
-    <div className="flex flex-col justify-between align-middle h-[25%] w-[100%] bg-[#111111] border-[#464646] border-[0.063em] rounded-[1.25em] p-[1.1em]">
+    <div className="flex flex-col justify-between align-middle h-[30%] w-[100%] bg-[#111111] border-[#464646] border-[0.063em] rounded-[1.25em] p-[1.1em]">
       <div className="flex flex-row justify-between">
         <h3 className="text-[1.25rem] font-bold">{bill.name}</h3>
         <div className="relative inline-block text-left">
@@ -53,7 +56,7 @@ function BillCard({ bill, onEdit, onDelete }) {
       </div>
       <hr />
       <div className="flex flex-row justify-between mt-2">
-        <p>Due: {bill.dueDate}</p>
+        <p>Due: {new Date(bill.dueDate).toLocaleDateString()}</p>
         <h3 className="text-[1.25rem] font-bold">₱{bill.amount}</h3>
       </div>
     </div>
@@ -69,13 +72,16 @@ export default function Home() {
   const [open, setOpen] = useState(false);
   const options = ["All", "High", "Medium", "Low"];
 
+  //For both add and edit bill
+  const today = new Date().toISOString().split("T")[0];
+
   //Editing
   const [editingBill, setEditingBill] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editBill, setEditBill] = useState({
     name: "",
     amount: "",
-    dueDate: "",
+    dueDate: today,
     priority: "All",
   });
 
@@ -131,13 +137,22 @@ export default function Home() {
   };
 
   // State for adding bill modal
-  const [showModal, setShowModal] = useState(false);
-  const [newBill, setNewBill] = useState({
+  const defaultNewBill = {
     name: "",
     amount: "",
-    dueDate: "",
-    priority: "All",
-  });
+    dueDate: new Date(), // react-datepicker uses Date objects
+    priority: "Medium",
+  };
+const [newBill, setNewBill] = useState(defaultNewBill);
+const [showModal, setShowModal] = useState(false);
+
+
+const openAddModal = () => {
+  setNewBill(defaultNewBill); // Reset form
+  setShowModal(true);
+};
+
+
 
   // Sets the budget
   const [budget, setBudget] = useState(0);
@@ -159,7 +174,7 @@ export default function Home() {
   const [selectedPriority, setSelectedPriority] = useState("All");
 
   const [selected, setSelected] = useState("All"); // Dropdown selection
-  
+
   // Search bar
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -172,66 +187,128 @@ export default function Home() {
     return matchesPriority && matchesSearch;
   });
 
-
   return (
     <>
+      <EmailReminderHandler />
       {/* AI */}
       <DueMinderAIUI
-        isOpen={chatbotOpen}
-        onClose={() => setChatbotOpen(false)}
+      isOpen={chatbotOpen}
+      onClose={() => setChatbotOpen(false)}
+      bills={bills}
+      budget={Number(budget)} 
       />
-      {/* EDIT MODAL */}
-      {showEditModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-[#1c1c1c] p-6 rounded-lg w-[90%] max-w-md text-white">
-            <h2 className="text-xl font-bold mb-4">
-              Edit Bill
-            </h2>
 
+      {/* Edit Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-[#010101] bg-opacity-70 flex justify-center items-center z-50">
+          <div className="bg-[#111111] p-6 rounded-xl w-[90%] max-w-md text-white space-y-4">
+            <h2 className="text-xl font-bold mb-2">Edit Bill</h2>
+            {/* Bill name */}
             <input
               type="text"
               placeholder="Bill Name"
               value={newBill.name}
               onChange={(e) => setNewBill({ ...newBill, name: e.target.value })}
-              className="w-full p-2 rounded bg-[#2c2c2c] text-white mb-2"
+              className="w-full p-2 pl-3 rounded bg-transparent border border-[#464646] outline-[#FFF6F2]"
             />
+
+            {/* Bill amount */}
             <input
               type="number"
               placeholder="Amount"
               value={newBill.amount}
-              onChange={(e) => setNewBill({ ...newBill, amount: e.target.value })}
-              className="w-full p-2 rounded bg-[#2c2c2c] text-white mb-2"
+              onChange={(e) =>
+                setNewBill({ ...newBill, amount: e.target.value })
+              }
+              className="w-full p-2 pl-3 rounded bg-transparent border border-[#464646] outline-[#FFF6F2]"
             />
-            <input
-              type="date"
-              value={newBill.dueDate}
-              onChange={(e) => setNewBill({ ...newBill, dueDate: e.target.value })}
-              className="w-full p-2 rounded bg-[#2c2c2c] text-white mb-2"
-            />
-            <select
-              value={newBill.priority}
-              onChange={(e) => setNewBill({ ...newBill, priority: e.target.value })}
-              className="w-full p-2 rounded bg-[#2c2c2c] text-white mb-4"
-            >
-              {options.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
 
-            <div className="flex justify-end space-x-2">
-              <button
-                onClick={closeModal}
-                className="px-4 py-2 bg-gray-600 rounded hover:bg-gray-500"
-              >
-                Cancel
-              </button>
+            {/* Bill due date */}
+            <div className="flex flex-row gap-2 w-full">
+              <div className="flex flex-row relative">
+                <DatePicker
+                  selected={newBill.dueDate ? new Date(newBill.dueDate) : null}
+                  onChange={(date) =>
+                    setNewBill({
+                      ...newBill,
+                      dueDate: date.toISOString().split("T")[0], // same format as before (YYYY-MM-DD)
+                    })
+                  }
+                  placeholderText="MM/DD/YY"
+                  dateFormat="MM/dd/yy"
+                  className="w-full p-2 pl-3 rounded bg-[#1a1a1a] border border-[#464646] text-white outline-[#FFF6F2]"
+                />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="w-5 h-5 text-white opacity-60 absolute right-3 top-[0.7em]"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M8.25 6V4.5m7.5 1.5V4.5M3.75 9h16.5M4.5 5.25h15A1.5 1.5 0 0121 6.75v12a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 18.75v-12A1.5 1.5 0 014.5 5.25z"
+                  />
+                </svg>
+              </div>
+
+              {/* Bill priority dropdown */}
+              <div className="relative w-[60%]">
+                <select
+                  value={newBill.priority}
+                  onChange={(e) => {
+                    setNewBill({ ...newBill, priority: e.target.value });
+                    setOpen(false);
+                  }}
+                  onClick={() => setOpen(!open)}
+                  className="w-full px-4 h-[2.8em] bg-transparent text-[#FFF6F2] border-[#464646] border-[0.063em] rounded appearance-none outline-none"
+                >
+                  {options.map((option) => (
+                    <option
+                      key={option}
+                      value={option}
+                      className="bg-[#464646] text-[#FFF6F2]"
+                    >
+                      {option}
+                    </option>
+                  ))}
+                </select>
+
+                <div className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`h-4 transition-transform duration-200 ${
+                      open ? "rotate-180" : ""
+                    }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-center gap-2 pt-2">
               <button
                 onClick={handleSubmit}
-                className="px-4 py-2 bg-[#FE7531] rounded hover:bg-[#e86b2d]"
+                className="w-[50%] py-2 font-bold bg-[#FE7531] active:opacity-80 rounded-full"
               >
                 Update
+              </button>
+              <button
+                onClick={closeModal}
+                className="w-[50%] py-2 bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full"
+              >
+                Cancel
               </button>
             </div>
           </div>
@@ -303,7 +380,7 @@ export default function Home() {
           <form action="#" className="relative w-[100%]">
             <input
               type="text"
-              placeholder="Search your bill here..."
+              placeholder="Search your bill..."
               name="search"
               id="search"
               value={searchQuery}
@@ -351,8 +428,9 @@ export default function Home() {
               <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className={`h-4 transition-transform duration-200 ${open ? "rotate-180" : ""
-                    }`}
+                  className={`h-4 transition-transform duration-200 ${
+                    open ? "rotate-180" : ""
+                  }`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -368,7 +446,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-
         {/* Bills list */}
         <div className="flex flex-col gap-[0.375em] h-full overflow-auto">
           {/* First Bill */}
@@ -383,13 +460,12 @@ export default function Home() {
         </div>
         {/* Searched bill will appear using this code */}
         {filteredBills.map((bill) => (
-          <div key={bill.id}>{/* Render bill info here */}</div>
+          <div key={bill.id}></div>
         ))}
-
         {/* Add bill button */}
         <div className="flex absolute right-0 left-0 bottom-8 justify-center items-center">
           <button
-            onClick={() => setShowModal(true)}
+            onClick={openAddModal}
             className="flex items-center gap-2 px-4 py-4 bg-[#FE7531] rounded-full active:scale-90 transition-transform duration-300 ease-in-out"
           >
             <svg
@@ -408,7 +484,7 @@ export default function Home() {
             </svg>
           </button>
         </div>
-
+        {/* Adding new bill modal */}
         {showModal && (
           <div className="fixed inset-0 bg-[#010101] bg-opacity-70 flex justify-center items-center z-50">
             <div className="bg-[#111111] p-6 rounded-xl w-[90%] max-w-md text-white space-y-4">
@@ -417,7 +493,7 @@ export default function Home() {
               <input
                 type="text"
                 placeholder="Bill Name"
-                className="w-full p-2 rounded bg-transparent border border-[#464646] outline-[#FFF6F2]"
+                className="w-full p-2 pl-3 rounded bg-transparent border border-[#464646] outline-[#FFF6F2]"
                 value={newBill.name}
                 onChange={(e) =>
                   setNewBill({ ...newBill, name: e.target.value })
@@ -428,74 +504,90 @@ export default function Home() {
               <input
                 type="number"
                 placeholder="Amount"
-                className="w-full p-2 rounded bg-transparent border border-[#464646] outline-[#FFF6F2]"
+                className="w-full p-2 pl-3 rounded bg-transparent border border-[#464646] outline-[#FFF6F2]"
                 value={newBill.amount}
                 onChange={(e) =>
                   setNewBill({ ...newBill, amount: e.target.value })
                 }
               />
 
-              <div className="flex flex-row gap-2">
+              <div className="flex flex-row gap-2 w-full">
                 {/* Bill due date */}
-                <input
-                  type="date"
-                  className="w-full p-2 rounded bg-transparent border border-[#464646] outline-[#FFF6F2]"
-                  value={newBill.dueDate}
-                  onChange={(e) =>
-                    setNewBill({ ...newBill, dueDate: e.target.value })
-                  }
-                />
+                <div className="flex flex-row relative">
+                  <DatePicker
+                    selected={newBill.dueDate}
+                    onChange={(date) => setNewBill({ ...newBill, dueDate: date })}
+                    dateFormat="MM/dd/yy"
+                    placeholderText="MM/DD/YY"
+                    className="w-full p-2 pl-3 rounded bg-[#1a1a1a] border border-[#464646] text-white outline-[#FFF6F2]"
+                  />
 
-                <div className="relative w-[50%]">
-                  <div className="relative w-32">
-                    <select
-                      value={newBill.priority}
-                      onChange={(e) => {
-                        setNewBill({ ...newBill, priority: e.target.value });
-                        setOpen(false);
-                      }}
-                      onClick={() => setOpen(!open)}
-                      className="w-full px-4 h-[2.8em] bg-transparent text-[#FFF6F2] border-[#464646] border-[0.063em] rounded appearance-none outline-none"
-                    >
-                      {options.map((option) => (
-                        <option
-                          key={option}
-                          value={option}
-                          className="bg-[#464646] text-[#FFF6F2]"
-                        >
-                          {option}
-                        </option>
-                      ))}
-                    </select>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    className="w-5 h-5 text-white opacity-60 absolute right-3 top-[0.7em]"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8.25 6V4.5m7.5 1.5V4.5M3.75 9h16.5M4.5 5.25h15A1.5 1.5 0 0121 6.75v12a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 18.75v-12A1.5 1.5 0 014.5 5.25z"
+                    />
+                  </svg>
+                </div>
 
-                    {/* Custom arrow icon */}
-                    <div className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className={`h-4 transition-transform duration-200 ${open ? "rotate-180" : ""
-                          }`}
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
+                {/* Bill dropdown */}
+                <div className="relative w-[60%]">
+                  <select
+                    value={newBill.priority}
+                    onChange={(e) => {
+                      setNewBill({ ...newBill, priority: e.target.value });
+                      setOpen(false);
+                    }}
+                    onClick={() => setOpen(!open)}
+                    className="w-full px-4 h-[2.8em] bg-transparent text-[#FFF6F2] border-[#464646] border-[0.063em] rounded appearance-none outline-none"
+                  >
+                    {options.map((option) => (
+                      <option
+                        key={option}
+                        value={option}
+                        className="bg-[#464646] text-[#FFF6F2]"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </div>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Custom arrow icon */}
+                  <div className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className={`h-4 transition-transform duration-200 ${
+                        open ? "rotate-180" : ""
+                      }`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
                   </div>
                 </div>
               </div>
 
-              <div className="flex justify-center gap-2 pt-2">
+              <div className="flex justify-center gap-2 pt-2 w-full">
                 <button
                   onClick={() => {
                     const billWithId = {
                       ...newBill,
-                      id: Date.now(), // Add this line to generate a unique ID
+                      id: Date.now(),
                     };
                     const updatedBills = [...bills, billWithId];
                     setBills(updatedBills);
@@ -503,20 +595,18 @@ export default function Home() {
 
                     // Reset modal and input
                     setShowModal(false);
-                    setNewBill({
-                      name: "",
-                      amount: "",
-                      dueDate: "",
-                      priority: "Medium",
-                    });
+                    setNewBill(defaultNewBill);
                   }}
-                  className="px-[3.35rem] py-2 bg-[#FE7531] active:opacity-80 rounded-full"
+                  className="w-[50%] py-2 bg-[#FE7531] active:opacity-80 rounded-full font-bold"
                 >
                   Add
                 </button>
                 <button
-                  onClick={() => setShowModal(false)}
-                  className="px-[3.35rem] py-2 bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full"
+                  onClick={() => {
+                    setShowModal(false);
+                    setNewBill(defaultNewBill);
+                  }}
+                  className="w-[50%] py-2 font-bold bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full"
                 >
                   Cancel
                 </button>

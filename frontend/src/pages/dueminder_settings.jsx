@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import DueMinderAIUI from "./dueminder.conversation";
 import emailjs from "emailjs-com";
+import EmailReminderHandler from "./EmailReminderHandler";
 
 function Settings() {
   // AI
@@ -31,21 +32,6 @@ function Settings() {
     setIsOn(updated);
     localStorage.setItem("notificationsEnabled", JSON.stringify(updated));
   };
-
-  useEffect(() => {
-    const today = new Date().toISOString().split("T")[0];
-    const notificationsAllowed = JSON.parse(localStorage.getItem("notificationsEnabled"));
-    const storedEmail = localStorage.getItem("userEmail");
-
-    if (notificationsAllowed && storedEmail) {
-      bills.forEach((bill) => {
-        const daysLeft = (new Date(bill.dueDate) - new Date(today)) / (1000 * 60 * 60 * 24);
-        if (daysLeft <= 2) {
-          sendReminderEmail(bill, storedEmail);
-        }
-      });
-    }
-  }, [bills]);
 
   console.log("userEmail state:", userEmail);
 

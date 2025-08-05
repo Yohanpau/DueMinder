@@ -3,7 +3,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "prebuild": "npm i --include=dev && dfx generate backend",
     "build": "vite build",
     "dev": "vite"
   },
@@ -12,9 +11,16 @@
     "@dfinity/auth-client": "2.4.1",
     "@dfinity/candid": "2.4.1",
     "@dfinity/principal": "2.4.1",
-    "react-json-view-lite": "2.3.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.0",
+    "emailjs-com": "^3.2.0",
+    "pdf-parse": "^1.1.1",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-datepicker": "^8.4.0",
+    "react-dom": "18.3.1",
+    "react-hook-form": "^7.60.0",
+    "react-json-view-lite": "2.3.0",
+    "react-router-dom": "^7.7.0"
   },
   "devDependencies": {
     "@types/react": "18.3.12",

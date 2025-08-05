@@ -86,15 +86,53 @@ ${knowledge}
 }
 
 app.post("/api/chat", async (req, res) => {
-  const { query } = req.body;
+  const { query, bills, budget } = req.body; 
+
   try {
-    const answer = await answerQuery(query);
+    const billText = bills
+      .map((b) => `- ${b.name} due on ${b.dueDate} with amount ₱${b.amount}`)
+      .join("\n");
+
+    const budgetValue = parseFloat(budget || 0).toFixed(2);
+    const budgetText = `The user's current budget is ₱${budgetValue}.`;
+
+    const queryEmbedding = await embedText(query);
+    const relevantChunks = retrieveRelevantChunks(queryEmbedding);
+    const knowledge = relevantChunks.map((c) => c.text).join("\n\n");
+
+    const prompt = `
+You are DueMinder, a helpful assistant that assists users in managing bills, subscriptions, and reminders.
+
+User’s Question:
+${query}
+
+Here is the user's bill data:
+${billText}
+
+${budgetText}
+
+Additional relevant information:
+${knowledge}
+
+Answer based on the budget and bill data. Respond conversationally.
+`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-1.5-flash",
+      contents: prompt,
+    });
+
+    const parts = response.candidates?.[0]?.content?.parts;
+    const answer =
+      parts?.map((p) => p.text).join("") ?? "⚠️ No response generated.";
+
     res.json({ reply: answer });
   } catch (err) {
     console.error("Error answering query:", err);
     res.status(500).json({ reply: "❌ Failed to generate a response." });
   }
 });
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, async () => {

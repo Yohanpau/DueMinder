@@ -11,5 +11,6 @@ body {
 /* Hide default calendar icon in Chrome, Safari, Edge */
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(100%) brightness(200%);
+  opacity: 1;
+  display: block;
 }
-

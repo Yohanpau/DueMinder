@@ -1,37 +1,79 @@
 import React, { useState } from "react";
 
-export default function DueMinderAIUI({ isOpen, onClose }) {
+export default function DueMinderAIUI({ isOpen, onClose, bills, budget }) {
   const [messages, setMessages] = useState([
-    { role: "ai", text: "Hello, there!" },
+    { role: "ai", text: "Hello, how can I assist you with your bills?" },
   ]);
   const [input, setInput] = useState("");
 
+  const generatePrioritySuggestions = () => {
+    if (!bills || bills.length === 0) return "You have no bills set yet.";
+
+    const high = bills.filter(bill => bill.priority === "High");
+    const medium = bills.filter(bill => bill.priority === "Medium");
+    const low = bills.filter(bill => bill.priority === "Low");
+
+    const tips = [];
+
+    if (high.length > 0) {
+      tips.push(
+        `You have ${high.length} high-priority bills like ${high.map(b => b.name).join(", ")}. Try to pay these first to avoid penalties.`
+      );
+    }
+
+    if (medium.length > 0) {
+      tips.push(
+        `You have ${medium.length} medium-priority bills. It's good to pay them on time but they may have some flexibility.`
+      );
+    }
+
+    if (low.length > 0) {
+      tips.push(
+        `You have ${low.length} low-priority bills like ${low.map(b => b.name).join(", ")}. Consider deferring these if you're short on budget.`
+      );
+    }
+
+    return tips.join("\n\n");
+  };
+
   const handleSend = async () => {
-  if (!input.trim()) return;
+    if (!input.trim()) return;
 
-  const newMessages = [...messages, { role: "user", text: input }];
-  setMessages(newMessages);
-  setInput("");
+    const userMessage = { role: "user", text: input };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
 
-  try {
-    const response = await fetch("http://localhost:5000/api/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ query: input }),
-    });
+    try {
+      let aiReply = "";
 
-    const data = await response.json();
-    setMessages((prev) => [...prev, { role: "ai", text: data.reply }]);
-  } catch (error) {
-    console.error("Fetch error:", error);
-    setMessages((prev) => [
-      ...prev,
-      { role: "ai", text: "❌ Failed to fetch response from server." },
-    ]);
-  }
-};
+      if (
+        input.toLowerCase().includes("suggestion") ||
+        input.toLowerCase().includes("tip")
+      ) {
+        aiReply = generatePrioritySuggestions();
+      } else {
+        const response = await fetch("http://localhost:5000/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ query: input, bills, budget }),
+        });
+
+        const data = await response.json();
+        aiReply = data.reply || "⚠️ No reply.";
+      }
+
+      const aiMessage = { role: "ai", text: aiReply };
+      setMessages((prev) => [...prev, aiMessage]);
+    } catch (error) {
+      console.error("Fetch error:", error);
+      setMessages((prev) => [
+        ...prev,
+        { role: "ai", text: "❌ Failed to fetch response from server." },
+      ]);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -45,7 +87,6 @@ export default function DueMinderAIUI({ isOpen, onClose }) {
               msg.role === "ai" ? "justify-start" : "justify-end"
             }`}
           >
-            {/* Message container */}
             <div
               className={`rounded-xl px-3 py-2 max-w-[70%] ${
                 msg.role === "ai"
@@ -58,6 +99,7 @@ export default function DueMinderAIUI({ isOpen, onClose }) {
           </div>
         ))}
       </div>
+
       <div className="flex items-center border-[0.063em] m-6 border-[#FE7531] p-2 rounded-lg">
         <input
           type="text"
@@ -68,7 +110,6 @@ export default function DueMinderAIUI({ isOpen, onClose }) {
           className="flex-1 p-2 bg-transparent text-[#e7deda] outline-none text-[0.875rem]"
         />
 
-        {/* Send button */}
         <button onClick={handleSend} className="mr-3 text-[#FE7531]">
           <svg
             xmlns="http://www.w3.org/2000/svg"
