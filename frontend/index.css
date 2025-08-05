@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 body {
-    background-color: #010101;
-    margin-left: 1.5em;
-    margin-right: 1.5em;
+  background-color: #010101;
+  margin-left: 1.5em;
+  margin-right: 1.5em;
 }
 
 /* Hide default calendar icon in Chrome, Safari, Edge */
@@ -13,4 +13,33 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(100%) brightness(200%);
   opacity: 1;
   display: block;
+}
+
+/* Loading dots animations */
+.dot {
+  width: 6px;
+  height: 6px;
+  background-color: #e7deda;
+  border-radius: 50%;
+  animation: bounce 1.4s infinite ease-in-out;
+}
+.dot1 {
+  animation-delay: 0s;
+}
+.dot2 {
+  animation-delay: 0.2s;
+}
+.dot3 {
+  animation-delay: 0.4s;
+}
+
+@keyframes bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-4px);
+  }
 }

@@ -1,23 +1,27 @@
 import React, { useState } from "react";
+import "/index.css";
 
 export default function DueMinderAIUI({ isOpen, onClose, bills, budget }) {
   const [messages, setMessages] = useState([
     { role: "ai", text: "Hello, how can I assist you with your bills?" },
   ]);
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false); //Loading state
 
   const generatePrioritySuggestions = () => {
     if (!bills || bills.length === 0) return "You have no bills set yet.";
 
-    const high = bills.filter(bill => bill.priority === "High");
-    const medium = bills.filter(bill => bill.priority === "Medium");
-    const low = bills.filter(bill => bill.priority === "Low");
+    const high = bills.filter((bill) => bill.priority === "High");
+    const medium = bills.filter((bill) => bill.priority === "Medium");
+    const low = bills.filter((bill) => bill.priority === "Low");
 
     const tips = [];
 
     if (high.length > 0) {
       tips.push(
-        `You have ${high.length} high-priority bills like ${high.map(b => b.name).join(", ")}. Try to pay these first to avoid penalties.`
+        `You have ${high.length} high-priority bills like ${high
+          .map((b) => b.name)
+          .join(", ")}. Try to pay these first to avoid penalties.`
       );
     }
 
@@ -29,7 +33,9 @@ export default function DueMinderAIUI({ isOpen, onClose, bills, budget }) {
 
     if (low.length > 0) {
       tips.push(
-        `You have ${low.length} low-priority bills like ${low.map(b => b.name).join(", ")}. Consider deferring these if you're short on budget.`
+        `You have ${low.length} low-priority bills like ${low
+          .map((b) => b.name)
+          .join(", ")}. Consider deferring these if you're short on budget.`
       );
     }
 
@@ -42,6 +48,7 @@ export default function DueMinderAIUI({ isOpen, onClose, bills, budget }) {
     const userMessage = { role: "user", text: input };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    setIsLoading(true);
 
     try {
       let aiReply = "";
@@ -70,14 +77,17 @@ export default function DueMinderAIUI({ isOpen, onClose, bills, budget }) {
       console.error("Fetch error:", error);
       setMessages((prev) => [
         ...prev,
-        { role: "ai", text: "❌ Failed to fetch response from server." },
+        { role: "ai", text: "❌ Failed to fetch response from server." }, //AI response when having error response
       ]);
+    } finally {
+      setIsLoading(false); //Stops the loading
     }
   };
 
   if (!isOpen) return null;
 
   return (
+    // Chatbot
     <div className="fixed top-24 left-6 w-[88%] h-[85%] bg-[#111111] border border-[#464646] rounded-xl shadow-xl flex flex-col z-50">
       <div className="flex-1 overflow-y-auto p-3 text-[#e7deda] space-y-2">
         {messages.map((msg, i) => (
@@ -88,7 +98,7 @@ export default function DueMinderAIUI({ isOpen, onClose, bills, budget }) {
             }`}
           >
             <div
-              className={`rounded-xl px-3 py-2 max-w-[70%] ${
+              className={`rounded-xl px-3 py-2 max-w-[70%] whitespace-pre-wrap ${
                 msg.role === "ai"
                   ? "bg-[#FE7531] text-[#e7deda]"
                   : "border border-[#FE7531] text-[#FE7531]"
@@ -98,6 +108,17 @@ export default function DueMinderAIUI({ isOpen, onClose, bills, budget }) {
             </div>
           </div>
         ))}
+
+        {/* Loading */}
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="bg-[#FE7531] text-[#e7deda] rounded-xl px-3 py-2 max-w-[70%] flex gap-1">
+              <span className="dot dot1" />
+              <span className="dot dot2" />
+              <span className="dot dot3" />
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center border-[0.063em] m-6 border-[#FE7531] p-2 rounded-lg">
