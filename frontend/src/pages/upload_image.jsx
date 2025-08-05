@@ -34,7 +34,20 @@ export default function ProfileUploader() {
             className="w-full h-full object-cover"
           />
         ) : (
-          <span className="text-[#FE7531] text-4xl">👤</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-12 h-12 text-[#FE7531]"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M5.121 17.804A9.969 9.969 0 0112 15c2.219 0 4.253.722 5.879 1.939M15 10a3 3 0 11-6 0 3 3 0 016 0z"
+            />
+          </svg>
         )}
       </div>
 
@@ -50,7 +63,7 @@ export default function ProfileUploader() {
         {/* Adds a photo */}
         <label
           htmlFor="profileUpload"
-          className="px-4 py-2 text-sm rounded-full cursor-pointer bg-[#FE7531] text-[#e7deda] active:border active:border-[#FE7531] active:text-[#e7deda] transition"
+          className="px-4 py-2 text-sm rounded-full cursor-pointer bg-[#FE7531] text-[#e7deda] active:scale-90 transition"
         >
           Upload Image
         </label>
@@ -59,7 +72,7 @@ export default function ProfileUploader() {
         {image && (
           <button
             onClick={() => setImage(null)}
-            className="px-4 py-2 text-sm border border-[#FE7531] text-[#FE7531] rounded-full hover:bg-[#FE7531] hover:text-[#e7deda] transition"
+            className="px-4 py-2 text-sm border border-[#FE7531] text-[#FE7531] rounded-full active:scale-90 transition"
           >
             Remove Photo
           </button>
