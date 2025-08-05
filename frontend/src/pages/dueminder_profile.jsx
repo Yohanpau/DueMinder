@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import DueMinderAIUI from "./dueminder.conversation";
+import ProfileUploader from "./upload_image";
 
 function Profile() {
   // AI
@@ -72,7 +73,7 @@ function Profile() {
         isOpen={chatbotOpen}
         onClose={() => setChatbotOpen(false)}
       />
-    
+
       {/* Upper icons */}
       <div className="flex flex-row justify-between align-middle w-[100%] mt-[2em] mb-[1em] text-white">
         {/* Back to settings */}
@@ -124,16 +125,13 @@ function Profile() {
       </div>
 
       {/* Profile edit section */}
-      <div className="text-[#e7deda] flex flex-col gap-[1.5%] w-[100%] h-[80vh]">
+      <div className="text-[#e7deda] flex flex-col gap-[5%] w-[100%] h-[80vh]">
         {/* Title */}
         <h2 className="text-[1.5em] font-bold">Profile</h2>
         {/* User profile */}
         <div>
           <div className="flex justify-center items-center">
-            <div className="w-[6em] h-[6em] rounded-full bg-[#222222] border border-[#FE7531] flex items-center justify-center overflow-hidden">
-              <img alt="User Profile" className="w-full h-full object-cover" />
-              <span className="text-[#FE7531] text-xs">👤</span>
-            </div>
+            <ProfileUploader />
           </div>
         </div>
 
@@ -332,7 +330,7 @@ function Profile() {
           )}
 
           {/* Save button */}
-          <button className="h-[2.813em] bg-[#FE7531] w-[100%] rounded-full font-bold">
+          <button className="h-[2.813em] bg-[#FE7531] w-[100%] rounded-full font-bold mb-10">
             Save
           </button>
         </form>
