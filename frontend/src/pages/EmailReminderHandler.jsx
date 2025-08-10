@@ -25,10 +25,16 @@ function EmailReminderHandler() {
             `📤 Processing email for: ${bill.name} (Due: ${bill.dueDate})`
           );
 
+          const formattedDate = new Date(bill.dueDate).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
+
           const templateParams = {
             email: storedEmail,
             bill_name: bill.name,
-            due_date: bill.dueDate,
+            due_date: formattedDate,
             amount: bill.amount,
           };
 
