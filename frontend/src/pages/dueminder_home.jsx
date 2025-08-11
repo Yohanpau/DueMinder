@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import DueMinderAIUI from "./dueminder.conversation";
 import EmailReminderHandler from "./EmailReminderHandler";
@@ -65,6 +65,8 @@ function BillCard({ bill, onEdit, onDelete }) {
 
 // Main component
 export default function Home() {
+  const datePickerRef = useRef(null);
+
   // AI
   const [chatbotOpen, setChatbotOpen] = useState(false);
 
@@ -143,16 +145,13 @@ export default function Home() {
     dueDate: new Date(), // react-datepicker uses Date objects
     priority: "Medium",
   };
-const [newBill, setNewBill] = useState(defaultNewBill);
-const [showModal, setShowModal] = useState(false);
+  const [newBill, setNewBill] = useState(defaultNewBill);
+  const [showModal, setShowModal] = useState(false);
 
-
-const openAddModal = () => {
-  setNewBill(defaultNewBill); // Reset form
-  setShowModal(true);
-};
-
-
+  const openAddModal = () => {
+    setNewBill(defaultNewBill); // Reset form
+    setShowModal(true);
+  };
 
   // Sets the budget
   const [budget, setBudget] = useState(0);
@@ -192,10 +191,10 @@ const openAddModal = () => {
       <EmailReminderHandler />
       {/* AI */}
       <DueMinderAIUI
-      isOpen={chatbotOpen}
-      onClose={() => setChatbotOpen(false)}
-      bills={bills}
-      budget={Number(budget)} 
+        isOpen={chatbotOpen}
+        onClose={() => setChatbotOpen(false)}
+        bills={bills}
+        budget={Number(budget)}
       />
 
       {/* Edit Modal */}
@@ -227,24 +226,27 @@ const openAddModal = () => {
             <div className="flex flex-row gap-2 w-full">
               <div className="flex flex-row relative">
                 <DatePicker
+                  ref={datePickerRef}
                   selected={newBill.dueDate ? new Date(newBill.dueDate) : null}
                   onChange={(date) =>
                     setNewBill({
                       ...newBill,
-                      dueDate: date.toISOString().split("T")[0], // same format as before (YYYY-MM-DD)
+                      dueDate: date.toISOString().split("T")[0], // YYYY-MM-DD format
                     })
                   }
                   placeholderText="MM/DD/YY"
                   dateFormat="MM/dd/yy"
                   className="w-full p-2 pl-3 rounded bg-[#1a1a1a] border border-[#464646] text-white outline-[#FFF6F2]"
                 />
+
                 <svg
+                  onClick={() => datePickerRef.current.setOpen(true)}
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
                   strokeWidth="1.5"
                   stroke="currentColor"
-                  className="w-5 h-5 text-white opacity-60 absolute right-3 top-[0.7em]"
+                  className="w-5 h-5 text-white opacity-60 absolute right-3 top-[0.7em] cursor-pointer"
                 >
                   <path
                     strokeLinecap="round"
@@ -515,8 +517,11 @@ const openAddModal = () => {
                 {/* Bill due date */}
                 <div className="flex flex-row relative">
                   <DatePicker
+                    ref={datePickerRef}
                     selected={newBill.dueDate}
-                    onChange={(date) => setNewBill({ ...newBill, dueDate: date })}
+                    onChange={(date) =>
+                      setNewBill({ ...newBill, dueDate: date })
+                    }
                     dateFormat="MM/dd/yy"
                     placeholderText="MM/DD/YY"
                     className="w-full p-2 pl-3 rounded bg-[#1a1a1a] border border-[#464646] text-white outline-[#FFF6F2]"
@@ -528,7 +533,8 @@ const openAddModal = () => {
                     viewBox="0 0 24 24"
                     strokeWidth="1.5"
                     stroke="currentColor"
-                    className="w-5 h-5 text-white opacity-60 absolute right-3 top-[0.7em]"
+                    className="w-5 h-5 text-white opacity-60 absolute right-3 top-[0.7em] cursor-pointer"
+                    onClick={() => datePickerRef.current.setFocus()}
                   >
                     <path
                       strokeLinecap="round"
