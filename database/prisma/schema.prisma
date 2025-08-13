@@ -8,12 +8,13 @@ datasource db {
 }
 
 model User {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  name       String
-  email      String   @unique
-  bills      Bill[]
-  budget     Float
-  priorities Priority[]
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  email        String   @unique
+  passwordHash String
+  bills        Bill[]
+  budget       Float
+  priorities   Priority[]
 }
 
 model Bill {
