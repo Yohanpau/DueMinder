@@ -4,6 +4,7 @@ import DueMinderAIUI from "./dueminder.conversation";
 import EmailReminderHandler from "./EmailReminderHandler";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import Suggestion from './suggestion_message';
 
 // Function for bill cards
 function BillCard({ bill, onEdit, onDelete }) {
@@ -65,8 +66,45 @@ function BillCard({ bill, onEdit, onDelete }) {
 
 // Main component
 export default function Home() {
+  // Bills information
+  const [bills, setBills] = useState(() => {
+    const stored = localStorage.getItem("bills");
+    return stored ? JSON.parse(stored) : [];
+  });
+  
+  // Sets the budget
+  const [budget, setBudget] = useState(0);
+
   // AI
   const [chatbotOpen, setChatbotOpen] = useState(false);
+  // Suggestion Pop-up
+  const [suggestionMessage, setSuggestionMessage] = useState(null);
+
+  // Example short AI prompt to get a brief suggestion
+  const shortPrompt = "Give me a quick tip to manage my bills.";
+
+  //Suggestion AI Logic
+  useEffect(() => {
+    async function fetchSuggestion() {
+      try {
+        const res = await fetch("http://localhost:5000/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: shortPrompt, bills, budget }),
+        });
+        const data = await res.json();
+        // Trim or limit message length if needed here
+        const shortMessage = data.reply.length > 150
+          ? data.reply.slice(0, 147) + "..."
+          : data.reply;
+        setSuggestionMessage(shortMessage);
+      } catch {
+        setSuggestionMessage("⚠️ Could not load suggestion.");
+      }
+    }
+
+    fetchSuggestion();
+  }, [bills, budget]);
 
   //Dropdown sorts
   const [open, setOpen] = useState(false);
@@ -85,11 +123,6 @@ export default function Home() {
     priority: "All",
   });
 
-  // Bills information
-  const [bills, setBills] = useState(() => {
-    const stored = localStorage.getItem("bills");
-    return stored ? JSON.parse(stored) : [];
-  });
 
   // Delete and edit bill
   const handleEdit = (bill) => {
@@ -143,19 +176,24 @@ export default function Home() {
     dueDate: new Date(), // react-datepicker uses Date objects
     priority: "Medium",
   };
-const [newBill, setNewBill] = useState(defaultNewBill);
-const [showModal, setShowModal] = useState(false);
+  const [newBill, setNewBill] = useState(defaultNewBill);
+  const [showModal, setShowModal] = useState(false);
 
 
-const openAddModal = () => {
-  setNewBill(defaultNewBill); // Reset form
-  setShowModal(true);
-};
+  const openAddModal = () => {
+    setNewBill(defaultNewBill); // Reset form
+    setShowModal(true);
+  };
 
-
-
-  // Sets the budget
-  const [budget, setBudget] = useState(0);
+  //Suggestion Condition
+  useEffect(() => {
+    const totalBill = bills.reduce((sum, bill) => sum + Number(bill.amount), 0);
+    if (totalBill > Number(budget)) {
+      setSuggestionMessage("Your bills have exceeded your budget! Consider shortcutting your low priority bills?");
+    } else {
+      setSuggestionMessage(null); // keep previous suggestion
+    }
+  }, [bills, budget]);
 
   useEffect(() => {
     const storedBudget = localStorage.getItem("userBudget");
@@ -191,12 +229,19 @@ const openAddModal = () => {
     <>
       <EmailReminderHandler />
       {/* AI */}
-      <DueMinderAIUI
-      isOpen={chatbotOpen}
-      onClose={() => setChatbotOpen(false)}
-      bills={bills}
-      budget={Number(budget)} 
-      />
+      <div className="relative">
+        <DueMinderAIUI
+          isOpen={chatbotOpen}
+          onClose={() => setChatbotOpen(false)}
+          bills={bills}
+          budget={Number(budget)}
+        />
+        {/* Suggestion Pop-up */}
+        {(
+          suggestionMessage && <Suggestion message={suggestionMessage} />
+        )}
+      </div>
+
 
       {/* Edit Modal */}
       {showEditModal && (
@@ -279,9 +324,8 @@ const openAddModal = () => {
                 <div className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className={`h-4 transition-transform duration-200 ${
-                      open ? "rotate-180" : ""
-                    }`}
+                    className={`h-4 transition-transform duration-200 ${open ? "rotate-180" : ""
+                      }`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -428,9 +472,8 @@ const openAddModal = () => {
               <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className={`h-4 transition-transform duration-200 ${
-                    open ? "rotate-180" : ""
-                  }`}
+                  className={`h-4 transition-transform duration-200 ${open ? "rotate-180" : ""
+                    }`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -564,9 +607,8 @@ const openAddModal = () => {
                   <div className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className={`h-4 transition-transform duration-200 ${
-                        open ? "rotate-180" : ""
-                      }`}
+                      className={`h-4 transition-transform duration-200 ${open ? "rotate-180" : ""
+                        }`}
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"

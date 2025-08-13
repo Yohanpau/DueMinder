@@ -133,6 +133,17 @@ Answer based on the budget and bill data. Respond conversationally.
   }
 });
 
+// for pop up suggestion
+async function fetchAISuggestion(query, bills, budget) {
+  const response = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query, bills, budget }),
+  });
+  const data = await response.json();
+  return data.reply;
+}
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, async () => {
