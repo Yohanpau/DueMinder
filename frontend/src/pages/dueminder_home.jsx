@@ -5,6 +5,7 @@ import EmailReminderHandler from "./EmailReminderHandler";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Suggestion from './suggestion_message';
+import shuffle from "lodash.shuffle";
 
 // Function for bill cards
 function BillCard({ bill, onEdit, onDelete }) {
@@ -71,7 +72,7 @@ export default function Home() {
     const stored = localStorage.getItem("bills");
     return stored ? JSON.parse(stored) : [];
   });
-  
+
   // Sets the budget
   const [budget, setBudget] = useState(0);
 
@@ -80,30 +81,81 @@ export default function Home() {
   // Suggestion Pop-up
   const [suggestionMessage, setSuggestionMessage] = useState(null);
 
-  // Example short AI prompt to get a brief suggestion
-  const shortPrompt = "Give me a quick tip to manage my bills.";
+  // Suggestion Prompt
+  const shortPrompt = `You are DueMinder, a helpful assistant that assists users in managing bills, subscriptions, and reminders.
+
+Here is the user's bill data:
+${ bills }
+
+${ budget }
+
+Answer based on the budget and bill data. Your response should only be a short sentence like a reminder.`;
 
   //Suggestion AI Logic
   useEffect(() => {
-    async function fetchSuggestion() {
+    let isCancelled = false;
+    let suggestionQueue = [];
+    let currentIndex = 0;
+
+    async function getSuggestion() {
       try {
         const res = await fetch("http://localhost:5000/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query: shortPrompt, bills, budget }),
+          body: JSON.stringify({
+            query: shortPrompt,
+            bills,
+            budget,
+          }),
         });
         const data = await res.json();
-        // Trim or limit message length if needed here
-        const shortMessage = data.reply.length > 150
+        const suggestion = data.reply.length > 150
           ? data.reply.slice(0, 147) + "..."
           : data.reply;
-        setSuggestionMessage(shortMessage);
-      } catch {
-        setSuggestionMessage("⚠️ Could not load suggestion.");
+
+        return suggestion;
+      } catch (err) {
+        console.error("Error fetching suggestion:", err);
+        return;
       }
     }
 
-    fetchSuggestion();
+    async function startSuggestionLoop() {
+      // Preload 5 suggestions (or as many as you want)
+      const initialSuggestions = await Promise.all(
+        Array.from({ length: 5 }, () => getSuggestion())
+      );
+
+      suggestionQueue = shuffle(initialSuggestions);
+      if (isCancelled) return;
+
+      // Show the first suggestion
+      setSuggestionMessage(suggestionQueue[currentIndex]);
+
+      const interval = setInterval(async () => {
+        // 2s break before next suggestion
+        setSuggestionMessage(null);
+
+        setTimeout(() => {
+          currentIndex = (currentIndex + 1) % suggestionQueue.length;
+
+          if (currentIndex === 0) {
+            // Shuffle again or refetch if needed
+            suggestionQueue = shuffle(suggestionQueue);
+          }
+
+          setSuggestionMessage(suggestionQueue[currentIndex]);
+        }, 2000); // 2-second delay before next suggestion
+      }, 12000); // 10s visible + 2s gap
+
+      return () => clearInterval(interval);
+    }
+
+    startSuggestionLoop();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [bills, budget]);
 
   //Dropdown sorts
@@ -184,16 +236,6 @@ export default function Home() {
     setNewBill(defaultNewBill); // Reset form
     setShowModal(true);
   };
-
-  //Suggestion Condition
-  useEffect(() => {
-    const totalBill = bills.reduce((sum, bill) => sum + Number(bill.amount), 0);
-    if (totalBill > Number(budget)) {
-      setSuggestionMessage("Your bills have exceeded your budget! Consider shortcutting your low priority bills?");
-    } else {
-      setSuggestionMessage(null); // keep previous suggestion
-    }
-  }, [bills, budget]);
 
   useEffect(() => {
     const storedBudget = localStorage.getItem("userBudget");

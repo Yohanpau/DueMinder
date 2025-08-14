@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const Suggestion = ({ message, animateOut, duration = 5000 }) => {
+const Suggestion = ({ message, animateOut, duration = 10000 }) => {
     const [visible, setVisible] = useState(true);
 
     useEffect(() => {
