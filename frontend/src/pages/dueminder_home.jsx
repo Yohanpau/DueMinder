@@ -82,81 +82,71 @@ export default function Home() {
   const [suggestionMessage, setSuggestionMessage] = useState(null);
 
   // Suggestion Prompt
-  const shortPrompt = `You are DueMinder, a helpful assistant that assists users in managing bills, subscriptions, and reminders.
+  const generateShortPrompt = (bills, budget) => {
+    const billText = bills.map(
+      (b) =>
+        `- ${b.name} (Priority: ${b.priority}) due on ${b.dueDate} with amount ₱${b.amount}`
+    ).join("\n");
+
+    const budgetText = `The user's current budget is ₱${parseFloat(budget || 0).toFixed(2)}.`;
+
+    return `You are DueMinder, a helpful assistant that assists users in managing bills, subscriptions, and reminders.
 
 Here is the user's bill data:
-${ bills }
+${billText}
 
-${ budget }
+${budgetText}
 
 Answer based on the budget and bill data. Your response should only be a short sentence like a reminder.`;
+  };
 
   //Suggestion AI Logic
-  useEffect(() => {
-    let isCancelled = false;
-    let suggestionQueue = [];
-    let currentIndex = 0;
+useEffect(() => {
+  let isCancelled = false;
+  let hideTimeout, interval;
 
-    async function getSuggestion() {
-      try {
-        const res = await fetch("http://localhost:5000/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            query: shortPrompt,
-            bills,
-            budget,
-          }),
-        });
-        const data = await res.json();
-        const suggestion = data.reply.length > 150
-          ? data.reply.slice(0, 147) + "..."
-          : data.reply;
+  async function fetchAndShowSuggestion() {
+    const shortPrompt = generateShortPrompt(bills, budget);
 
-        return suggestion;
-      } catch (err) {
-        console.error("Error fetching suggestion:", err);
-        return;
+    try {
+      const res = await fetch("http://localhost:5000/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: shortPrompt, bills, budget }),
+      });
+
+      const data = await res.json();
+      const suggestion = data.reply.length > 150
+        ? data.reply.slice(0, 147) + "..."
+        : data.reply;
+
+      if (!isCancelled && suggestion) {
+        setSuggestionMessage(suggestion);
+
+        // Hide after 10 seconds
+        hideTimeout = setTimeout(() => {
+          setSuggestionMessage(null);
+        }, 10000);
       }
+    } catch (err) {
+      console.error("Error fetching suggestion:", err);
     }
+  }
 
-    async function startSuggestionLoop() {
-      // Preload 5 suggestions (or as many as you want)
-      const initialSuggestions = await Promise.all(
-        Array.from({ length: 5 }, () => getSuggestion())
-      );
+  // Show first suggestion immediately
+  fetchAndShowSuggestion();
 
-      suggestionQueue = shuffle(initialSuggestions);
-      if (isCancelled) return;
+  // Then repeat every 30 minutes
+  interval = setInterval(() => {
+    fetchAndShowSuggestion();
+  }, 30 * 60 * 1000); // 30 minutes
 
-      // Show the first suggestion
-      setSuggestionMessage(suggestionQueue[currentIndex]);
-
-      const interval = setInterval(async () => {
-        // 2s break before next suggestion
-        setSuggestionMessage(null);
-
-        setTimeout(() => {
-          currentIndex = (currentIndex + 1) % suggestionQueue.length;
-
-          if (currentIndex === 0) {
-            // Shuffle again or refetch if needed
-            suggestionQueue = shuffle(suggestionQueue);
-          }
-
-          setSuggestionMessage(suggestionQueue[currentIndex]);
-        }, 2000); // 2-second delay before next suggestion
-      }, 12000); // 10s visible + 2s gap
-
-      return () => clearInterval(interval);
-    }
-
-    startSuggestionLoop();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [bills, budget]);
+  return () => {
+    isCancelled = true;
+    clearTimeout(hideTimeout);
+    clearInterval(interval);
+  };
+}, [bills, budget]);
 
   //Dropdown sorts
   const [open, setOpen] = useState(false);

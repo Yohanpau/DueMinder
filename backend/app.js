@@ -86,11 +86,11 @@ ${knowledge}
 }
 
 app.post("/api/chat", async (req, res) => {
-  const { query, bills, budget } = req.body; 
+  const { query, bills, budget } = req.body;
 
   try {
     const billText = bills
-      .map((b) => `- ${b.name} due on ${b.dueDate} with amount ₱${b.amount}`)
+      .map((b) => `- ${b.name} (Priority: ${b.priority}) due on ${b.dueDate} with amount ₱${b.amount}`)
       .join("\n");
 
     const budgetValue = parseFloat(budget || 0).toFixed(2);
