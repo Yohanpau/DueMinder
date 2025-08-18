@@ -11,18 +11,18 @@ import { AuthController } from './auth.controller';
 @Module({
   imports: [
     ConfigModule,
-    UsersModule, 
+    UsersModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET'),
+        secret: config.get<string>('JWT_SECRET') || 'defaultSecret',
         signOptions: { expiresIn: '1d' },
       }),
     }),
   ],
-  controllers: [AuthController], // ✅ Added this
+  controllers: [AuthController],
   providers: [AuthService, LocalStrategy, JwtStrategy],
   exports: [AuthService],
 })

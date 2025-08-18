@@ -5,7 +5,6 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthService } from '../auth.service';
 import { ConfigService } from '@nestjs/config';
 
-// jwt.strategy.ts
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
@@ -15,16 +14,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: 'adryan123', // replace with configService.get('JWT_SECRET')
-    });
+      secretOrKey: configService.get<string>('JWT_SECRET') || 'default_secret', // ✅ fallback
+    } as any); // 👈 cast avoids TS error
   }
 
-  // src/auth/jwt.strategy.ts
   async validate(payload: { sub: string; email: string }) {
-  const user = await this.authService.findUserById(payload.sub);
-  if (!user) throw new UnauthorizedException();
-  return user; // This becomes request.user
+    const user = await this.authService.findUserById(payload.sub);
+    if (!user) throw new UnauthorizedException();
+    return user; // Becomes request.user
   }
-
 }
-
