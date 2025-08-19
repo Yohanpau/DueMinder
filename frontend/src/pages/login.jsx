@@ -12,22 +12,34 @@ function LogIn() {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => {
-    const userData = JSON.parse(localStorage.getItem(data.email));
-    if (userData) {
-      if (userData.password === data.password) {
-        localStorage.setItem("authenticatedUser", JSON.stringify(userData));
-        localStorage.setItem("userEmail", userData.email);
-        console.log(userData.name + " You Are Successfully Logged In");
-        alert("Success!");
-        navigate("/home");
-      } else {
-        alert("Credentials error.");
-      }
-    } else {
-      alert("You are not Registered yet.");
+  const onSubmit = async (data) => {
+  try {
+    const response = await fetch("http://localhost:3000/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      alert(error.message || "Login failed");
+      return;
     }
-  };
+
+    const result = await response.json();
+
+    // Save JWT token in localStorage
+    localStorage.setItem("token", result.access_token);
+    localStorage.setItem("user", JSON.stringify(result.user));
+
+    alert("Login successful!");
+    navigate("/home");
+  } catch (err) {
+    console.error(err);
+    alert("Something went wrong. Please try again.");
+  }
+};
+
 
   return (
     <form

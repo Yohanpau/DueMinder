@@ -12,6 +12,7 @@
   "dependencies": {
     "@google/genai": "^1.10.0",
     "@nestjs/mapped-types": "*",
+    "axios": "^1.11.0",
     "cors": "^2.8.5",
     "cosine-similarity": "^1.0.1",
     "dotenv": "^17.2.0",

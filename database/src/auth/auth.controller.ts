@@ -20,7 +20,7 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('me')
+  @Post('profile')
   me(@Request() req) {
     return { user: req.user };
   }
