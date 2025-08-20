@@ -21,6 +21,23 @@ export class UsersService {
   async findById(id: string): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: { id },
+      include: { bills: true, priorities: true }, // also fetch related data if needed
     });
   }
+
+  async getBudget(userId: string) {
+  const user = await this.prisma.user.findUnique({
+    where: { id: userId },
+    select: { budget: true },
+  });
+  return { budget: user?.budget || 0 };
+}
+
+async updateBudget(id: string, budget: number) {
+  return this.prisma.user.update({
+    where: { id },
+    data: { budget },
+  });
+}
+
 }
