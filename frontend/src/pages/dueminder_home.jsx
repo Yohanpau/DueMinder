@@ -4,6 +4,7 @@ import DueMinderAIUI from "./dueminder.conversation";
 import EmailReminderHandler from "./EmailReminderHandler";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import api from "./api"; // Axios instance
 
 // Function for bill cards
 function BillCard({ bill, onEdit, onDelete }) {
@@ -88,10 +89,20 @@ export default function Home() {
   });
 
   // Bills information
-  const [bills, setBills] = useState(() => {
-    const stored = localStorage.getItem("bills");
-    return stored ? JSON.parse(stored) : [];
-  });
+  const [bills, setBills] = useState([]);
+
+  // Fetch bills from backend
+  useEffect(() => {
+    const fetchBills = async () => {
+      try {
+        const response = await api.get("/bills");
+        setBills(response.data);
+      } catch (err) {
+        console.error("Error fetching bills", err);
+      }
+    };
+    fetchBills();
+  }, []);
 
   // Delete and edit bill
   const handleEdit = (bill) => {
@@ -116,25 +127,31 @@ export default function Home() {
     });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (editingBill) {
-      // Editing existing bill
-      const updatedBills = bills.map((bill) =>
-        bill.id === editingBill.id ? { ...editingBill, ...newBill } : bill
-      );
-      setBills(updatedBills);
-      localStorage.setItem("bills", JSON.stringify(updatedBills));
-      setEditingBill(null);
-      setShowEditModal(false);
+      try {
+        const response = await api.put(`/bills/${editingBill.id}`, newBill);
+        const updatedBills = bills.map((bill) =>
+          bill.id === editingBill.id ? response.data : bill
+        );
+        setBills(updatedBills);
+        setEditingBill(null);
+        setShowEditModal(false);
+      } catch (err) {
+        console.error("Error updating bill", err);
+      }
     }
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     const confirmDelete = window.confirm("Delete this bill?");
-    if (confirmDelete) {
-      const updatedBills = bills.filter((bill) => bill.id !== id);
-      setBills(updatedBills);
-      localStorage.setItem("bills", JSON.stringify(updatedBills));
+    if (!confirmDelete) return;
+
+    try {
+      await api.delete(`/bills/${id}`);
+      setBills(bills.filter((bill) => bill.id !== id));
+    } catch (err) {
+      console.error("Error deleting bill", err);
     }
   };
 
@@ -142,7 +159,7 @@ export default function Home() {
   const defaultNewBill = {
     name: "",
     amount: "",
-    dueDate: new Date(), // react-datepicker uses Date objects
+    dueDate: new Date(),
     priority: "Medium",
   };
   const [newBill, setNewBill] = useState(defaultNewBill);
@@ -151,6 +168,18 @@ export default function Home() {
   const openAddModal = () => {
     setNewBill(defaultNewBill); // Reset form
     setShowModal(true);
+  };
+
+  // Add new bill to backend
+  const handleAddBill = async () => {
+    try {
+      const response = await api.post("/bills", newBill);
+      setBills([...bills, response.data]);
+      setShowModal(false);
+      setNewBill(defaultNewBill);
+    } catch (err) {
+      console.error("Error adding bill", err);
+    }
   };
 
   // Sets the budget
@@ -171,7 +200,6 @@ export default function Home() {
 
   // For priority filter
   const [selectedPriority, setSelectedPriority] = useState("All");
-
   const [selected, setSelected] = useState("All"); // Dropdown selection
 
   // Search bar
@@ -185,6 +213,7 @@ export default function Home() {
       bill.amount.toString().includes(searchQuery);
     return matchesPriority && matchesSearch;
   });
+
 
   return (
     <>
@@ -601,7 +630,7 @@ export default function Home() {
 
                     // Reset modal and input
                     setShowModal(false);
-                    setNewBill(defaultNewBill);
+                    setNewBill(handleAddBill);
                   }}
                   className="w-[50%] py-2 bg-[#FE7531] active:opacity-80 rounded-full font-bold"
                 >
@@ -610,7 +639,7 @@ export default function Home() {
                 <button
                   onClick={() => {
                     setShowModal(false);
-                    setNewBill(defaultNewBill);
+                    setNewBill(handleAddBill);
                   }}
                   className="w-[50%] py-2 font-bold bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full"
                 >

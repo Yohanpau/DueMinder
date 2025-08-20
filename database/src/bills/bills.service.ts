@@ -9,16 +9,22 @@ export class BillsService {
 
   // Create a bill and link it to a user
   async create(userId: string, data: CreateBillDto) {
-    return this.prisma.bill.create({
-      data: {
-        name: data.name,
-        amount: data.amount,
-        dueDate: new Date(data.dueDate),
-        priority: data.priority,
-        userId,
-      },
-    });
-  }
+  const priorityMap: Record<string, number> = {
+    High: 1,
+    Medium: 2,
+    Low: 3,
+  };
+
+  return this.prisma.bill.create({
+    data: {
+      name: data.name,
+      amount: parseFloat(data.amount as any), // ensure it's a number
+      dueDate: new Date(data.dueDate),
+      priority: priorityMap[data.priority] ?? 2, // default to Medium if undefined
+      userId: userId,
+    },
+  });
+}
 
   // Get all bills for a user
   async findAll(userId: string) {
