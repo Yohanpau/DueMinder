@@ -12,26 +12,28 @@ function SignUp() {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => {
-    const existingUser = JSON.parse(localStorage.getItem(data.email));
-    if (existingUser) {
-      console.log("Email is already registered!");
-      alert("Email already registered!");
-      navigate("/");
-    } else {
-      const userData = {
-        name: data.name,
-        email: data.email,
-        password: data.password,
-      };
-      localStorage.setItem(data.email, JSON.stringify(userData));
-      localStorage.setItem("authenticatedUser", JSON.stringify(userData));
-      localStorage.setItem("userEmail", data.email);
-      console.log(data.name + " has been successfully registered");
-      alert("Success!");
-      navigate("/");
+  const onSubmit = async (data) => {
+  try {
+    const response = await fetch("http://localhost:3000/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      alert(error.message || "Registration failed");
+      return;
     }
-  };
+
+    alert("Registration successful!");
+    navigate("/");
+  } catch (err) {
+    console.error(err);
+    alert("Something went wrong. Please try again.");
+  }
+};
+
 
   return (
     <form
