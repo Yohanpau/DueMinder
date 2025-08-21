@@ -67,7 +67,7 @@ function BillCard({ bill, onEdit, onDelete }) {
 
 // Main component
 export default function Home() {
-  const datePickerRef = useRef(null); // ✅ declare it
+  const datePickerRef = useRef(null);
 
   // Bills information
   const [bills, setBills] = useState(() => {
