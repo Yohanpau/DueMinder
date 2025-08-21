@@ -76,13 +76,61 @@ export default function Home() {
     return stored ? JSON.parse(stored) : [];
   });
 
-  // Sets the budget
-  const [budget, setBudget] = useState(0);
+  // Budget
+  const [budget, setBudget] = useState(() => {
+    const storedBudget = localStorage.getItem("userBudget");
+    return storedBudget ? JSON.parse(storedBudget) : 0;
+  });
 
   // AI
   const [chatbotOpen, setChatbotOpen] = useState(false);
-  // Suggestion Pop-up
   const [suggestionMessage, setSuggestionMessage] = useState(null);
+
+  //Dropdown sorts
+  const [open, setOpen] = useState(false);
+  const options = ["All", "High", "Medium", "Low"];
+
+  //For both add and edit bill
+  const today = new Date().toISOString().split("T")[0];
+
+  //Editing
+  const [editingBill, setEditingBill] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editBill, setEditBill] = useState({
+    name: "",
+    amount: "",
+    dueDate: today,
+    priority: "All",
+  });
+
+  // State for adding bill modal
+  const defaultNewBill = {
+    name: "",
+    amount: "",
+    dueDate: new Date(),
+    priority: "Medium",
+  };
+  const [newBill, setNewBill] = useState(defaultNewBill);
+  const [showModal, setShowModal] = useState(false);
+
+  // Priority filter
+  const [selected, setSelected] = useState("All");
+
+  // Search bar
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Compute the total amount of bills
+  const totalAmount = bills.reduce((sum, bill) => sum + Number(bill.amount), 0);
+  const remaining = budget - totalAmount;
+
+  // Filters bills based on priority and search
+  const filteredBills = bills.filter((bill) => {
+    const matchesPriority = selected === "All" || bill.priority === selected;
+    const matchesSearch =
+      bill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      bill.amount.toString().includes(searchQuery);
+    return matchesPriority && matchesSearch;
+  });
 
   // Suggestion Prompt
   const generateShortPrompt = (bills, budget) => {
@@ -107,7 +155,7 @@ ${budgetText}
 Answer based on the budget and bill data. Your response should only be a short sentence like a reminder.`;
   };
 
-  //Suggestion AI Logic
+  // Suggestion AI Logic
   useEffect(() => {
     let isCancelled = false;
     let hideTimeout, interval;
@@ -147,7 +195,7 @@ Answer based on the budget and bill data. Your response should only be a short s
     // Then repeat every 30 minutes
     interval = setInterval(() => {
       fetchAndShowSuggestion();
-    }, 30 * 60 * 1000); // 30 minutes
+    }, 30 * 60 * 1000);
 
     return () => {
       isCancelled = true;
@@ -155,26 +203,6 @@ Answer based on the budget and bill data. Your response should only be a short s
       clearInterval(interval);
     };
   }, [bills, budget]);
-
-  //Dropdown sorts
-  const [open, setOpen] = useState(false);
-  const options = ["All", "High", "Medium", "Low"];
-
-  //For both add and edit bill
-  const today = new Date().toISOString().split("T")[0];
-
-  //Editing
-  const [editingBill, setEditingBill] = useState(null);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editBill, setEditBill] = useState({
-    name: "",
-    amount: "",
-    dueDate: today,
-    priority: "All",
-  });
-
-  // Bills information
-  const [bills, setBills] = useState([]);
 
   // Fetch bills from backend
   useEffect(() => {
@@ -189,7 +217,23 @@ Answer based on the budget and bill data. Your response should only be a short s
     fetchBills();
   }, []);
 
-  // Delete and edit bill
+  // ------------------ BILL MODAL HANDLERS ------------------
+  const openAddModal = () => {
+    setNewBill(defaultNewBill);
+    setShowModal(true);
+  };
+
+  const handleAddBill = async () => {
+    try {
+      const response = await api.post("/bills", newBill);
+      setBills([...bills, response.data]);
+      setShowModal(false);
+      setNewBill(defaultNewBill);
+    } catch (err) {
+      console.error("Error adding bill", err);
+    }
+  };
+
   const handleEdit = (bill) => {
     setEditingBill(bill);
     setNewBill({
@@ -199,17 +243,6 @@ Answer based on the budget and bill data. Your response should only be a short s
       priority: bill.priority,
     });
     setShowEditModal(true);
-  };
-
-  const closeModal = () => {
-    setShowEditModal(false);
-    setEditingBill(null);
-    setNewBill({
-      name: "",
-      amount: "",
-      dueDate: "",
-      priority: "All",
-    });
   };
 
   const handleSubmit = async () => {
@@ -240,64 +273,11 @@ Answer based on the budget and bill data. Your response should only be a short s
     }
   };
 
-  // State for adding bill modal
-  const defaultNewBill = {
-    name: "",
-    amount: "",
-    dueDate: new Date(),
-    priority: "Medium",
+  const closeModal = () => {
+    setShowEditModal(false);
+    setEditingBill(null);
+    setNewBill(defaultNewBill);
   };
-  const [newBill, setNewBill] = useState(defaultNewBill);
-  const [showModal, setShowModal] = useState(false);
-
-  const openAddModal = () => {
-    setNewBill(defaultNewBill); // Reset form
-    setShowModal(true);
-  };
-
-  // Add new bill to backend
-  const handleAddBill = async () => {
-    try {
-      const response = await api.post("/bills", newBill);
-      setBills([...bills, response.data]);
-      setShowModal(false);
-      setNewBill(defaultNewBill);
-    } catch (err) {
-      console.error("Error adding bill", err);
-    }
-  };
-
-  // Sets the budget
-  const [budget, setBudget] = useState(0);
-
-  useEffect(() => {
-    const storedBudget = localStorage.getItem("userBudget");
-    if (storedBudget) {
-      setBudget(JSON.parse(storedBudget));
-    }
-  }, []);
-
-  // Compute the total amount of bills
-  const totalAmount = bills.reduce((sum, bill) => sum + Number(bill.amount), 0);
-
-  // Compare the total amount of bills and the budget
-  const remaining = budget - totalAmount;
-
-  // For priority filter
-  const [selectedPriority, setSelectedPriority] = useState("All");
-  const [selected, setSelected] = useState("All"); // Dropdown selection
-
-  // Search bar
-  const [searchQuery, setSearchQuery] = useState("");
-
-  // Filters bills base on priority
-  const filteredBills = bills.filter((bill) => {
-    const matchesPriority = selected === "All" || bill.priority === selected;
-    const matchesSearch =
-      bill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      bill.amount.toString().includes(searchQuery);
-    return matchesPriority && matchesSearch;
-  });
 
 
   return (
