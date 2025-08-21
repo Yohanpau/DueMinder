@@ -86,11 +86,11 @@ ${knowledge}
 }
 
 app.post("/api/chat", async (req, res) => {
-  const { query, bills, budget } = req.body; 
+  const { query, bills, budget } = req.body;
 
   try {
     const billText = bills
-      .map((b) => `- ${b.name} due on ${b.dueDate} with amount ₱${b.amount}`)
+      .map((b) => `- ${b.name} (Priority: ${b.priority}) due on ${b.dueDate} with amount ₱${b.amount}`)
       .join("\n");
 
     const budgetValue = parseFloat(budget || 0).toFixed(2);
@@ -132,6 +132,17 @@ Answer based on the budget and bill data. Respond conversationally.
     res.status(500).json({ reply: "❌ Failed to generate a response." });
   }
 });
+
+// for pop up suggestion
+async function fetchAISuggestion(query, bills, budget) {
+  const response = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query, bills, budget }),
+  });
+  const data = await response.json();
+  return data.reply;
+}
 
 
 const PORT = process.env.PORT || 5000;

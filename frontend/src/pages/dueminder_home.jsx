@@ -4,6 +4,8 @@ import DueMinderAIUI from "./dueminder.conversation";
 import EmailReminderHandler from "./EmailReminderHandler";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import Suggestion from './suggestion_message';
+import shuffle from "lodash.shuffle";
 
 // Function for bill cards
 function BillCard({ bill, onEdit, onDelete }) {
@@ -65,10 +67,86 @@ function BillCard({ bill, onEdit, onDelete }) {
 
 // Main component
 export default function Home() {
-  const datePickerRef = useRef(null);
+  // Bills information
+  const [bills, setBills] = useState(() => {
+    const stored = localStorage.getItem("bills");
+    return stored ? JSON.parse(stored) : [];
+  });
+
+  // Sets the budget
+  const [budget, setBudget] = useState(0);
 
   // AI
   const [chatbotOpen, setChatbotOpen] = useState(false);
+  // Suggestion Pop-up
+  const [suggestionMessage, setSuggestionMessage] = useState(null);
+
+  // Suggestion Prompt
+  const generateShortPrompt = (bills, budget) => {
+    const billText = bills.map(
+      (b) =>
+        `- ${b.name} (Priority: ${b.priority}) due on ${b.dueDate} with amount ₱${b.amount}`
+    ).join("\n");
+
+    const budgetText = `The user's current budget is ₱${parseFloat(budget || 0).toFixed(2)}.`;
+
+    return `You are DueMinder, a helpful assistant that assists users in managing bills, subscriptions, and reminders.
+
+Here is the user's bill data:
+${billText}
+
+${budgetText}
+
+Answer based on the budget and bill data. Your response should only be a short sentence like a reminder.`;
+  };
+
+  //Suggestion AI Logic
+useEffect(() => {
+  let isCancelled = false;
+  let hideTimeout, interval;
+
+  async function fetchAndShowSuggestion() {
+    const shortPrompt = generateShortPrompt(bills, budget);
+
+    try {
+      const res = await fetch("http://localhost:5000/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: shortPrompt, bills, budget }),
+      });
+
+      const data = await res.json();
+      const suggestion = data.reply.length > 150
+        ? data.reply.slice(0, 147) + "..."
+        : data.reply;
+
+      if (!isCancelled && suggestion) {
+        setSuggestionMessage(suggestion);
+
+        // Hide after 10 seconds
+        hideTimeout = setTimeout(() => {
+          setSuggestionMessage(null);
+        }, 10000);
+      }
+    } catch (err) {
+      console.error("Error fetching suggestion:", err);
+    }
+  }
+
+  // Show first suggestion immediately
+  fetchAndShowSuggestion();
+
+  // Then repeat every 30 minutes
+  interval = setInterval(() => {
+    fetchAndShowSuggestion();
+  }, 30 * 60 * 1000); // 30 minutes
+
+  return () => {
+    isCancelled = true;
+    clearTimeout(hideTimeout);
+    clearInterval(interval);
+  };
+}, [bills, budget]);
 
   //Dropdown sorts
   const [open, setOpen] = useState(false);
@@ -87,11 +165,6 @@ export default function Home() {
     priority: "All",
   });
 
-  // Bills information
-  const [bills, setBills] = useState(() => {
-    const stored = localStorage.getItem("bills");
-    return stored ? JSON.parse(stored) : [];
-  });
 
   // Delete and edit bill
   const handleEdit = (bill) => {
@@ -148,13 +221,11 @@ export default function Home() {
   const [newBill, setNewBill] = useState(defaultNewBill);
   const [showModal, setShowModal] = useState(false);
 
+
   const openAddModal = () => {
     setNewBill(defaultNewBill); // Reset form
     setShowModal(true);
   };
-
-  // Sets the budget
-  const [budget, setBudget] = useState(0);
 
   useEffect(() => {
     const storedBudget = localStorage.getItem("userBudget");
@@ -190,12 +261,19 @@ export default function Home() {
     <>
       <EmailReminderHandler />
       {/* AI */}
-      <DueMinderAIUI
-        isOpen={chatbotOpen}
-        onClose={() => setChatbotOpen(false)}
-        bills={bills}
-        budget={Number(budget)}
-      />
+      <div className="relative">
+        <DueMinderAIUI
+          isOpen={chatbotOpen}
+          onClose={() => setChatbotOpen(false)}
+          bills={bills}
+          budget={Number(budget)}
+        />
+        {/* Suggestion Pop-up */}
+        {(
+          suggestionMessage && <Suggestion message={suggestionMessage} />
+        )}
+      </div>
+
 
       {/* Edit Modal */}
       {showEditModal && (
@@ -281,9 +359,8 @@ export default function Home() {
                 <div className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className={`h-4 transition-transform duration-200 ${
-                      open ? "rotate-180" : ""
-                    }`}
+                    className={`h-4 transition-transform duration-200 ${open ? "rotate-180" : ""
+                      }`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -430,9 +507,8 @@ export default function Home() {
               <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className={`h-4 transition-transform duration-200 ${
-                    open ? "rotate-180" : ""
-                  }`}
+                  className={`h-4 transition-transform duration-200 ${open ? "rotate-180" : ""
+                    }`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -570,9 +646,8 @@ export default function Home() {
                   <div className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className={`h-4 transition-transform duration-200 ${
-                        open ? "rotate-180" : ""
-                      }`}
+                      className={`h-4 transition-transform duration-200 ${open ? "rotate-180" : ""
+                        }`}
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
