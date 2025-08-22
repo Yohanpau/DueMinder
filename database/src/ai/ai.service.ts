@@ -1,4 +1,3 @@
-// ai.service.ts
 import { Injectable } from "@nestjs/common";
 import { GoogleGenAI } from "@google/genai";
 import { PrismaService } from "../prisma/prisma.service";
@@ -12,20 +11,18 @@ export class AiService {
   }
 
   async answerQuery(userId: string, query: string) {
-    // 1️⃣ Fetch bills from DB
+
     const bills = await this.prisma.bill.findMany({
       where: { userId },
       orderBy: { dueDate: "asc" },
     });
 
-    // 2️⃣ Fetch user budget
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { budget: true },
     });
     const budget = user?.budget ?? 0;
 
-    // 3️⃣ Format bills
     const priorityMap = { 1: "High", 2: "Medium", 3: "Low" };
     const billText =
       bills.length > 0
@@ -43,7 +40,6 @@ export class AiService {
 
     const budgetText = `The user's current budget is ₱${budget.toFixed(2)}.`;
 
-    // 4️⃣ Compose prompt as DueMinder
     const prompt = `
 You are DueMinder, a friendly assistant that helps users manage bills, subscriptions, and reminders.
 
@@ -58,7 +54,6 @@ ${budgetText}
 Answer based on the budget and bill data. Respond conversationally as DueMinder.
 `;
 
-    // 5️⃣ Send prompt to Gemini AI
     const response = await this.ai.models.generateContent({
       model: "gemini-1.5-flash",
       contents: [{ role: "user", parts: [{ text: prompt }] }],

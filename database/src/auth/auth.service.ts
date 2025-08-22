@@ -19,8 +19,8 @@ export class AuthService {
     const user = await this.users.create({
     name,
     email,
-    passwordHash, // now matches Prisma schema
-    budget: 0, // or whatever default you want
+    passwordHash,
+    budget: 0,
     bills: { create: [] },
     priorities: { create: [] },
   });
@@ -51,7 +51,7 @@ export class AuthService {
   }
 
   async findUserById(id: string) {
-  const user = await this.usersService.findById(id); // however you fetch from DB
+  const user = await this.usersService.findById(id); 
   if (!user) return null;
   return { id: user.id, email: user.email, name: user.name };
 }

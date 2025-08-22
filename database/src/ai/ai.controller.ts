@@ -1,4 +1,3 @@
-// ai.controller.ts
 import { Controller, Post, Body, Req, UseGuards } from "@nestjs/common";
 import { AiService } from "./ai.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
