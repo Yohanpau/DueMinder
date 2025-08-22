@@ -698,32 +698,20 @@ Answer based on the budget and bill data. Your response should only be a short s
 
               <div className="flex justify-center gap-2 pt-2 w-full">
                 <button
-                  onClick={() => {
-                    const billWithId = {
-                      ...newBill,
-                      id: Date.now(),
-                    };
-                    const updatedBills = [...bills, billWithId];
-                    setBills(updatedBills);
-                    localStorage.setItem("bills", JSON.stringify(updatedBills));
-
-                    // Reset modal and input
-                    setShowModal(false);
-                    setNewBill(handleAddBill);
-                  }}
+                  onClick={handleAddBill}
                   className="w-[50%] py-2 bg-[#FE7531] active:opacity-80 rounded-full font-bold"
                 >
                   Add
                 </button>
                 <button
-                  onClick={() => {
-                    setShowModal(false);
-                    setNewBill(handleAddBill);
-                  }}
-                  className="w-[50%] py-2 font-bold bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full"
-                >
-                  Cancel
-                </button>
+                onClick={() => {
+                  setShowModal(false);
+                  setNewBill(defaultNewBill); // reset form properly
+                }}
+                className="w-[50%] py-2 font-bold bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full"
+              >
+                Cancel
+              </button>
               </div>
             </div>
           </div>
