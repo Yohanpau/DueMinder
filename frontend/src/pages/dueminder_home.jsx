@@ -246,20 +246,30 @@ Answer based on the budget and bill data. Your response should only be a short s
   };
 
   const handleSubmit = async () => {
-    if (editingBill) {
-      try {
-        const response = await api.put(`/bills/${editingBill.id}`, newBill);
-        const updatedBills = bills.map((bill) =>
+  if (editingBill) {
+    try {
+      // Make sure dueDate is saved in correct format
+      const payload = {
+        ...newBill,
+        dueDate: new Date(newBill.dueDate).toISOString(),
+      };
+
+      const response = await api.put(`/bills/${editingBill.id}`, payload);
+
+      // Update state instantly (real-time effect)
+      setBills((prev) =>
+        prev.map((bill) =>
           bill.id === editingBill.id ? response.data : bill
-        );
-        setBills(updatedBills);
-        setEditingBill(null);
-        setShowEditModal(false);
-      } catch (err) {
-        console.error("Error updating bill", err);
-      }
+        )
+      );
+
+      setEditingBill(null);
+      setShowEditModal(false);
+    } catch (error) {
+      console.error("Error updating bill:", error);
     }
-  };
+  }
+};
 
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm("Delete this bill?");

@@ -43,13 +43,25 @@ export class BillsService {
   }
 
   // Update a bill
-  async update(userId: string, id: string, data: Prisma.BillUpdateInput) {
-    const bill = await this.findOne(userId, id); // ensure ownership
-    return this.prisma.bill.update({
-      where: { id: bill.id },
-      data,
-    });
-  }
+  async update(userId: string, id: string, data: any) {
+  const bill = await this.findOne(userId, id); // ensure ownership
+
+  const priorityMap: Record<string, number> = {
+    High: 1,
+    Medium: 2,
+    Low: 3,
+  };
+
+  return this.prisma.bill.update({
+    where: { id: bill.id },
+    data: {
+      name: data.name,
+      amount: data.amount ? parseFloat(data.amount) : bill.amount,
+      dueDate: data.dueDate ? new Date(data.dueDate) : bill.dueDate,
+      priority: data.priority ? priorityMap[data.priority] ?? bill.priority : bill.priority,
+    },
+  });
+}
 
   // Delete a bill
   async remove(userId: string, id: string) {
