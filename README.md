@@ -149,7 +149,7 @@ npm i
 - API key will be removed after the winners are announced
 - DATABASE_URL="mongodb+srv://root:randompassword@cluster0.yxw8fgt.mongodb.net/dueminder?retryWrites=true&w=majority&appName=Cluster0&tls=true&tlsAllowInvalidCertificates=true"
 - JWT_SECRET="adyohanpeyt"
-- GEMINI_API_KEY=XXXXXXX - for the api key of this there's an Intrucion on 7 be sure to follow that and include it also here.
+- GEMINI_API_KEY=XXXXXXX - for the api key of this there's an Intrucion on 8 be sure to follow that and include it also here.
 - Create a .env file in inside the database folder just like this C:\Users\Admin\Desktop\Python\DueMinder\database\\.env
 ```
 npx prisma generate
