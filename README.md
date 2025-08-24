@@ -113,7 +113,7 @@ let isDebugMode = !module.parent;
 //for testing purpose
 if (isDebugMode) {
 
-    let PDF_FILE = './Dueminder.pdf'; ------------------> Just change this to ./Dueminder.pdf
+    let PDF_FILE = '05-versions-space.pdf'; ------------------> Just change this to ./Dueminder.pdf
     let dataBuffer = Fs.readFileSync(PDF_FILE);
     Pdf(dataBuffer).then(function(data) {
         Fs.writeFileSync(`${PDF_FILE}.txt`, data.text, {
