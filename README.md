@@ -10,7 +10,7 @@
 
 ## Opening the Project
 In order to use DueMinder, one must open this repository, have an API key, have an API key and run the following commands:
-- It still the same as before we've just added some new key intrusctions
+Its still the same as before we've just added some new key intrusctions:
 
 ### 1. Install all dependencies in the project root:
 ```
