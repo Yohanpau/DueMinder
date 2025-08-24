@@ -127,7 +127,7 @@ if (isDebugMode) {
 
 }
 ```
-### 7. Now start running the backend server again:
+### 8. Now start running the backend server again:
 (Make sure u have your own API Key so that our AI Assitant would work)
 (If you dont have an API key you can get it for free in https://aistudio.google.com/apikey)
 (After getting the key create an .env folder on the backend and put the api key to GEMINI_API_KEY=xxxxxxx)
@@ -150,7 +150,7 @@ npm i
 - DATABASE_URL="mongodb+srv://root:randompassword@cluster0.yxw8fgt.mongodb.net/dueminder?retryWrites=true&w=majority&appName=Cluster0&tls=true&tlsAllowInvalidCertificates=true"
 - JWT_SECRET="adyohanpeyt"
 - GEMINI_API_KEY=XXXXXXX - for the api key of this there's an Intrucion on 7 be sure to follow that and include it also here.
-- Create a .env file in inside the database folder just like this C:\Users\Admin\Desktop\Python\DueMinder\database\.env
+- Create a .env file in inside the database folder just like this C:\Users\Admin\Desktop\Python\DueMinder\database\\.env
 ```
 npx prisma generate
 ```
