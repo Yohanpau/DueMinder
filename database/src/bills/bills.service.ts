@@ -22,25 +22,28 @@ export class BillsService {
       dueDate: new Date(data.dueDate),
       priority: priorityMap[data.priority] ?? 2, // default to Medium if undefined
       userId: userId,
+      status: 'Unpaid',
     },
   });
 }
 
   // Get all bills for a user
   async findAll(userId: string) {
-    return this.prisma.bill.findMany({
-      where: { userId },
-    });
-  }
+  return this.prisma.bill.findMany({
+    where: { userId },
+    include: { payments: true }, // 👈 include payment history
+  });
+}
 
   // Get one bill
   async findOne(userId: string, id: string) {
-    const bill = await this.prisma.bill.findFirst({
-      where: { id, userId },
-    });
-    if (!bill) throw new NotFoundException('Bill not found');
-    return bill;
-  }
+  const bill = await this.prisma.bill.findFirst({
+    where: { id, userId },
+    include: { payments: true }, // 👈 include payment history
+  });
+  if (!bill) throw new NotFoundException('Bill not found');
+  return bill;
+}
 
   // Update a bill
   async update(userId: string, id: string, data: any) {
@@ -53,14 +56,14 @@ export class BillsService {
   };
 
   return this.prisma.bill.update({
-    where: { id: bill.id },
-    data: {
-      name: data.name,
-      amount: data.amount ? parseFloat(data.amount) : bill.amount,
-      dueDate: data.dueDate ? new Date(data.dueDate) : bill.dueDate,
-      priority: data.priority ? priorityMap[data.priority] ?? bill.priority : bill.priority,
-    },
-  });
+  where: { id: bill.id },
+  data: {
+    name: data.name ?? bill.name,
+    amount: data.amount ? parseFloat(data.amount) : bill.amount,
+    dueDate: data.dueDate ? new Date(data.dueDate) : bill.dueDate,
+    priority: data.priority ? priorityMap[data.priority] ?? bill.priority : bill.priority,
+  },
+});
 }
 
   // Delete a bill
