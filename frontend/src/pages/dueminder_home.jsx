@@ -6,9 +6,11 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Suggestion from './suggestion_message';
 import shuffle from "lodash.shuffle";
+import { HiX } from "react-icons/hi";
+import { FaCheckCircle } from "react-icons/fa";
 
 // Function for bill cards
-function BillCard({ bill, onEdit, onDelete }) {
+function BillCard({ bill, onEdit, onDelete, onPaid }) {
   const [showMenu, setShowMenu] = useState(false);
 
   return (
@@ -52,6 +54,15 @@ function BillCard({ bill, onEdit, onDelete }) {
               >
                 Delete
               </button>
+              <button
+                onClick={() => {
+                  onPaid(bill.id);
+                  setShowMenu(false);
+                }}
+                className="w-full px-3 py-1 text-left text-[#FFF6F2] active:bg-gray-100 active:rounded active:text-[#FE7531]"
+              >
+                Paid
+              </button>
             </div>
           )}
         </div>
@@ -64,6 +75,7 @@ function BillCard({ bill, onEdit, onDelete }) {
     </div>
   );
 }
+
 
 // Main component
 export default function Home() {
@@ -101,56 +113,57 @@ Answer based on the budget and bill data. Your response should only be a short s
   };
 
   //Suggestion AI Logic
-useEffect(() => {
-  let isCancelled = false;
-  let hideTimeout, interval;
+  useEffect(() => {
+    let isCancelled = false;
+    let hideTimeout, interval;
 
-  async function fetchAndShowSuggestion() {
-    const shortPrompt = generateShortPrompt(bills, budget);
+    async function fetchAndShowSuggestion() {
+      const shortPrompt = generateShortPrompt(bills, budget);
 
-    try {
-      const res = await fetch("http://localhost:5000/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: shortPrompt, bills, budget }),
-      });
+      try {
+        const res = await fetch("http://localhost:5000/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: shortPrompt, bills, budget }),
+        });
 
-      const data = await res.json();
-      const suggestion = data.reply.length > 150
-        ? data.reply.slice(0, 147) + "..."
-        : data.reply;
+        const data = await res.json();
+        const suggestion = data.reply.length > 150
+          ? data.reply.slice(0, 147) + "..."
+          : data.reply;
 
-      if (!isCancelled && suggestion) {
-        setSuggestionMessage(suggestion);
+        if (!isCancelled && suggestion) {
+          setSuggestionMessage(suggestion);
 
-        // Hide after 10 seconds
-        hideTimeout = setTimeout(() => {
-          setSuggestionMessage(null);
-        }, 10000);
+          // Hide after 10 seconds
+          hideTimeout = setTimeout(() => {
+            setSuggestionMessage(null);
+          }, 10000);
+        }
+      } catch (err) {
+        console.error("Error fetching suggestion:", err);
       }
-    } catch (err) {
-      console.error("Error fetching suggestion:", err);
     }
-  }
 
-  // Show first suggestion immediately
-  fetchAndShowSuggestion();
-
-  // Then repeat every 30 minutes
-  interval = setInterval(() => {
+    // Show first suggestion immediately
     fetchAndShowSuggestion();
-  }, 30 * 60 * 1000); // 30 minutes
 
-  return () => {
-    isCancelled = true;
-    clearTimeout(hideTimeout);
-    clearInterval(interval);
-  };
-}, [bills, budget]);
+    // Then repeat every 30 minutes
+    interval = setInterval(() => {
+      fetchAndShowSuggestion();
+    }, 30 * 60 * 1000); // 30 minutes
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(hideTimeout);
+      clearInterval(interval);
+    };
+  }, [bills, budget]);
 
   //Dropdown sorts
   const [open, setOpen] = useState(false);
   const options = ["All", "High", "Medium", "Low"];
+  const paidOptions = ["Cash", "Bank", "E-Wallet"];
 
   //For both add and edit bill
   const today = new Date().toISOString().split("T")[0];
@@ -165,6 +178,10 @@ useEffect(() => {
     priority: "All",
   });
 
+  //Paid Bill Modal
+  const [payingBill, setPayingBill] = useState(null);
+  const [showPaidModal, setShowPaidModal] = useState(false);
+  const [showPaidConfirmation, setShowPaidConfirmation] = useState(false);
 
   // Delete and edit bill
   const handleEdit = (bill) => {
@@ -211,6 +228,21 @@ useEffect(() => {
     }
   };
 
+  const handlePaid = (id) => {
+    setPayingBill(id);
+    setShowPaidModal(true);
+  }
+
+  const handlePaidSubmit = (id) => {
+    setShowPaidConfirmation(true);
+  }
+
+  const closePaidModal = () => {
+    setPayingBill(null);
+    setShowPaidModal(false);
+    setShowPaidConfirmation(false);
+  }
+
   // State for adding bill modal
   const defaultNewBill = {
     name: "",
@@ -220,6 +252,14 @@ useEffect(() => {
   };
   const [newBill, setNewBill] = useState(defaultNewBill);
   const [showModal, setShowModal] = useState(false);
+
+  //Paid bill new state
+  const defaultPaidBill = {
+    name: "",
+    paymentMethod: "",
+    paidDate: new Date(),
+  };
+  const [newPaidBill, setNewPaidBill] = useState(defaultPaidBill);
 
 
   const openAddModal = () => {
@@ -390,6 +430,125 @@ useEffect(() => {
           </div>
         </div>
       )}
+
+      {/* Payment Method Modal */}
+      {showPaidModal && (
+        <div className="fixed inset-0 bg-[#010101] bg-opacity-70 flex justify-center items-center z-50">
+          <div className="bg-[#111111] p-6 rounded-xl w-[90%] max-w-md text-white space-y-4">
+            <h2 className="text-[5.5vw] font-bold text-[#FE7531]">Payment Method</h2>
+
+            {/* Bill due date */}
+            <div className="gap-2 w-full">
+              <div className="relative w-full mb-5">
+                <p className="mb-2">Date of Payment</p>
+                <DatePicker
+                  selected={newPaidBill.dueDate ? new Date(newPaidBill.dueDate) : null}
+                  onChange={(date) =>
+                    setNewPaidBill({
+                      ...newPaidBill,
+                      dueDate: date.toISOString().split("T")[0], // same format as before (YYYY-MM-DD)
+                    })
+                  }
+                  placeholderText="MM/DD/YY"
+                  dateFormat="MM/dd/yy"
+                  className="w-[142.42%] p-2 pl-3 rounded bg-[#1a1a1a] border border-[#464646] text-white outline-[#FFF6F2]"
+                />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="w-7 h-8 text-white opacity-60 absolute right-3 top-[2.2em]"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M8.25 6V4.5m7.5 1.5V4.5M3.75 9h16.5M4.5 5.25h15A1.5 1.5 0 0121 6.75v12a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 18.75v-12A1.5 1.5 0 014.5 5.25z"
+                  />
+                </svg>
+              </div>
+
+              {/* Bill payment method dropdown */}
+              <p className="mb-2">Payment Method</p>
+              <div className="relative w-full">
+                <select
+                  value={newPaidBill.paidOptions}
+                  onChange={(e) => setNewPaidBill({ ...newPaidBill, paidOptions: e.target.value })}
+                  className="appearance-none w-full px-4 py-2 bg-[#1a1a1a] border border-[#464646] text-white rounded"
+                >
+                  <option value="" disabled>Choose Mode of Payment</option>
+                  {paidOptions.map((method) => (
+                    <option key={method} value={method}>{method}</option>
+                  ))}
+                </select>
+
+                <div className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`h-4 transition-transform duration-200 ${open ? "rotate-180" : ""
+                      }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-center gap-2 pt-2">
+              <button
+                onClick={handlePaidSubmit}
+                className="w-[50%] py-2 font-bold bg-[#FE7531] active:opacity-80 rounded-full"
+              >
+                Save
+              </button>
+              <button
+                onClick={closePaidModal}
+                className="w-[50%] py-2 bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PAID CONFIRMATION MODAL */}
+      {showPaidConfirmation && (
+        <div className="fixed inset-0 bg-[#010101] bg-opacity-70 flex justify-center items-center z-50">
+          <div className="w-[60%] max-w-md bg-[#111111] p-6 rounded-xl text-white border border-[#464646] relative">
+
+            <button
+              onClick={closePaidModal}
+              className="absolute top-3 right-3 text-[7.5vw] text-[#FE7531]"
+            >
+              <HiX />
+            </button>
+
+            {/* Title */}
+            <h1 className="text-[#FE7531] font-bold text-[8vw] text-center mb-4">
+              Saved to bills history!
+            </h1>
+
+            {/* Icon centered */}
+            <div className="flex justify-center">
+              <div className="bg-[#FE7531] rounded-full inline-flex items-center justify-center">
+                <FaCheckCircle className="text-white w-[25vw] h-[25vw]" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       {/* Upper icons */}
       <div className="flex flex-row justify-between w-[100%] mt-[2em] mb-[1em]">
         {/* AI icon */}
@@ -530,6 +689,7 @@ useEffect(() => {
               bill={bill}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onPaid={handlePaid}
             />
           ))}
         </div>
