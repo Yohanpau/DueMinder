@@ -228,6 +228,7 @@ Answer based on the budget and bill data. Your response should only be a short s
     }
   };
 
+  //PAID HISTORY LOGIC
   const handlePaid = (id) => {
     setPayingBill(id);
     setShowPaidModal(true);
@@ -534,14 +535,14 @@ Answer based on the budget and bill data. Your response should only be a short s
             </button>
 
             {/* Title */}
-            <h1 className="text-[#FE7531] font-bold text-[8vw] text-center mb-4">
+            <h1 className="text-[#FE7531] font-bold text-[6vw] text-center my-4">
               Saved to bills history!
             </h1>
 
             {/* Icon centered */}
             <div className="flex justify-center">
               <div className="bg-[#FE7531] rounded-full inline-flex items-center justify-center">
-                <FaCheckCircle className="text-white w-[25vw] h-[25vw]" />
+                <FaCheckCircle className="text-white w-[20vw] h-[20vw]" />
               </div>
             </div>
           </div>
