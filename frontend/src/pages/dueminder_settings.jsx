@@ -154,6 +154,33 @@ function Settings() {
                 </svg>
               </a>
             </div>
+            {/* History page */}
+            <div className="flex flex-row justify-between align-middle w-[100%] bg-[#111111] border-[#464646] border-[0.063em] rounded-[1.25em] p-[1.1em]">
+              <div className="flex flex-col">
+                <h3 className="text-[1.25rem] font-bold">History</h3>
+                <p className="text-[0.75rem]">See all your paid bills here</p>
+              </div>
+              <a
+                href="/history"
+                className="flex items-center justify-center px-4 py-2 text-[#e7deda] rounded-full active:scale-90"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </a>
+            </div>
+          </div>
             {/* Second settings */}
             <div className="flex flex-row justify-between items-center w-full bg-[#111111] border-[#464646] border-[0.063em] rounded-[1.25em] p-[1.1em]">
               <div className="flex flex-col">
@@ -179,7 +206,6 @@ function Settings() {
                 />
               </div>
             </div>
-          </div>
         </div>
         <a
           href="/"

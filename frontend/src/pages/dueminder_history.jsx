@@ -1,0 +1,53 @@
+import React from "react";
+import { Link } from "react-router-dom";
+
+function PaidBillsCard() {
+    return (
+        <div className="flex flex-col justify-between align-middle h-[30%] w-[100%] bg-[#111111] border-[#464646] border-[0.063em] rounded-[1.25em] p-[1.1em]">
+            <div className="flex flex-row justify-between text-white">
+                <h3 className="text-[1.25rem] font-bold">Electricity</h3>
+                <div className="relative inline-block text-left">
+                    <h3 className="text-[1.25rem] font-bold">₱500</h3>
+                </div>
+            </div>
+            <p className="text-white">Paid through BANK</p>
+            <div className="flex flex-row justify-between mt-2 text-white">
+                <p className="text-left text-white text-[3.5vw]">Payment Date: September 1, 2025</p>
+                <div className="w-[86px] h-[36px] bg-[#4D1717] rounded-[35px] text-left text-white flex items-center justify-center">
+                    Overdue
+                </div>
+
+            </div>
+
+        </div>
+    );
+}
+
+export default function History() {
+    return (
+        <div>
+            <Link
+                to="/settings"
+                className="flex items-center text-white text-[4vw] font-medium hover:underline mt-[6.5vh]"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="white"
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 19l-7-7 7-7"
+                    />
+                </svg>
+                Back to settings
+            </Link>
+            <h2 className="text-[1.5rem]/[1em] font-bold text-white mt-[5vh] mb-[3.5vh] ml-[1vw]">Bills History</h2>
+            <PaidBillsCard />
+        </div>
+    );
+}
