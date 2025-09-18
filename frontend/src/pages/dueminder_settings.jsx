@@ -49,18 +49,18 @@ function Settings() {
       .catch((err) => console.error("Email error:", err));
   };
 
-  
-    useEffect(() => {
-      console.log("Loaded bills:", bills);
-    }, [bills]);
-  
-    useEffect(() => {
-      console.log("Notifications enabled:", isOn);
-    }, [isOn]);
-  
-    useEffect(() => {
-      console.log("Raw stored email:", localStorage.getItem("userEmail"));
-    }, []);
+
+  useEffect(() => {
+    console.log("Loaded bills:", bills);
+  }, [bills]);
+
+  useEffect(() => {
+    console.log("Notifications enabled:", isOn);
+  }, [isOn]);
+
+  useEffect(() => {
+    console.log("Raw stored email:", localStorage.getItem("userEmail"));
+  }, []);
 
   return (
     <>
@@ -122,13 +122,13 @@ function Settings() {
 
       {/* Settings list */}
       <div className="text-[#e7deda] flex flex-col gap-[0.6em] w-[100%] h-[80vh] justify-between">
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {/* Title */}
           <h2 className="text-[1.5em] font-bold">Settings</h2>
 
           {/* Settings list */}
           <div className="flex flex-col gap-2">
-            {/* First settings */}
+            {/* Edit Profile */}
             <div className="flex flex-row justify-between align-middle w-[100%] bg-[#111111] border-[#464646] border-[0.063em] rounded-[1.25em] p-[1.1em]">
               <div className="flex flex-col">
                 <h3 className="text-[1.25rem] font-bold">Profile</h3>
@@ -180,8 +180,7 @@ function Settings() {
                 </svg>
               </a>
             </div>
-          </div>
-            {/* Second settings */}
+            {/* Notifications */}
             <div className="flex flex-row justify-between items-center w-full bg-[#111111] border-[#464646] border-[0.063em] rounded-[1.25em] p-[1.1em]">
               <div className="flex flex-col">
                 <h3 className="text-[1.25rem] font-bold text-white">
@@ -206,6 +205,8 @@ function Settings() {
                 />
               </div>
             </div>
+          </div>
+
         </div>
         <a
           href="/"

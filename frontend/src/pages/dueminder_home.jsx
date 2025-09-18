@@ -682,7 +682,7 @@ Answer based on the budget and bill data. Your response should only be a short s
           </div>
         </div>
         {/* Bills list */}
-        <div className="flex flex-col gap-[0.375em] h-full overflow-auto">
+        <div className="flex flex-col gap-2 h-full overflow-auto">
           {/* First Bill */}
           {filteredBills.map((bill) => (
             <BillCard

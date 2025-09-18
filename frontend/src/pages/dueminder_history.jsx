@@ -3,22 +3,25 @@ import { Link } from "react-router-dom";
 
 function PaidBillsCard() {
     return (
-        <div className="flex flex-col justify-between align-middle h-[30%] w-[100%] bg-[#111111] border-[#464646] border-[0.063em] rounded-[1.25em] p-[1.1em]">
+        <div className="flex flex-col justify-between align-middle h-[30%] w-[100%] bg-[#111111] border-[#464646] border-[0.063em] rounded-[1.25em] p-[1.5em] gap-[0.2rem]">
             <div className="flex flex-row justify-between text-white">
                 <h3 className="text-[1.25rem] font-bold">Electricity</h3>
                 <div className="relative inline-block text-left">
                     <h3 className="text-[1.25rem] font-bold">₱500</h3>
                 </div>
             </div>
-            <p className="text-white">Paid through BANK</p>
-            <div className="flex flex-row justify-between mt-2 text-white">
-                <p className="text-left text-white text-[3.5vw]">Payment Date: September 1, 2025</p>
-                <div className="w-[86px] h-[36px] bg-[#4D1717] rounded-[35px] text-left text-white flex items-center justify-center">
+            <div className="flex flex-row justify-between items-center">
+                <div className="flex flex-col justify-between mt-2 text-white">
+                    <div className="flex flex-row gap-1">
+                        <p className="text-white">Paid through </p>
+                        <p className="font-semibold">BANK</p>
+                    </div>
+                    <p className="text-left text-white text-[3.5vw]">Payment Date: September 1, 2025</p>
+                </div>
+                <div className="w-[86px] h-[36px] bg-[#4D1717] rounded-full text-left text-white flex items-center justify-center">
                     Overdue
                 </div>
-
             </div>
-
         </div>
     );
 }
