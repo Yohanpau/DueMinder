@@ -8,12 +8,17 @@ import Suggestion from './suggestion_message';
 import shuffle from "lodash.shuffle";
 import { HiX } from "react-icons/hi";
 import { FaCheckCircle } from "react-icons/fa";
+import { CSSTransition, TransitionGroup } from 'react-transition-group';
+import { useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Function for bill cards
 function BillCard({ bill, onEdit, onDelete, onPaid }) {
   const [showMenu, setShowMenu] = useState(false);
+  const location = useLocation();
 
   return (
+
     <div className="flex flex-col justify-between align-middle h-[30%] w-[100%] bg-[#111111] border-[#464646] border-[0.063em] rounded-[1.25em] p-[1.1em]">
       <div className="flex flex-row justify-between">
         <h3 className="text-[1.25rem] font-bold">{bill.name}</h3>

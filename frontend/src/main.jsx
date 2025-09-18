@@ -1,6 +1,9 @@
 import React from "react"; // Enables use of JSX (e.g. <h1>Hi</h1>)
 import ReactDOM from "react-dom/client"; //Mounts React app into the real HTML (<div id="root"></div>)
 import { BrowserRouter, Routes, Route } from "react-router-dom"; // Handles page navigation
+import { AnimatePresence, motion } from "framer-motion";
+import { useLocation } from 'react-router-dom';
+
 import SignUp from "./pages/signup.jsx";
 import LogIn from "./pages/login.jsx";
 import Home from "./pages/dueminder_home.jsx";
@@ -10,37 +13,91 @@ import Profile from "./pages/dueminder_profile.jsx";
 import History from "./pages/dueminder_history.jsx";
 import "/index.css";
 
+const PageTransition = ({ children }) => (
+  <motion.div
+    key={location.pathname}
+    initial={{ opacity: 0, scale: 0.95 }}
+    animate={{ opacity: 1, scale: 1 }}
+    exit={{ opacity: 0, scale: 0.95 }}
+    transition={{ duration: 0.4, ease: "easeInOut" }}
+  >
+    {children}
+  </motion.div>
+);
 //Since we don't have app.jsx, we just put this block of code to the main,jsx instead
-const MainApp = () => { // changed into arrow function insteat of just a function
+export default function AnimatedRoutes() { // changed into arrow function insteat of just a function
+  const location = useLocation();
+
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<LogIn />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/home" element={
-          <ProtectedRoute>
-            <Home />
-          </ProtectedRoute>
-        } />
-        <Route path="/settings" element={
-          <ProtectedRoute>
-            <Settings />
-          </ProtectedRoute>
-        } />
-        <Route path="/profile" element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-          }/>
-          <Route path="/history" element={
-          <ProtectedRoute>
-            <History />
-          </ProtectedRoute>
-          }/>
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route
+          path="/"
+          element={
+            <PageTransition>
+              <LogIn />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <PageTransition>
+              <SignUp />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/home"
+          element={
+            <ProtectedRoute>
+              <PageTransition>
+                <Home />
+              </PageTransition>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <PageTransition>
+                <Settings />
+              </PageTransition>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <PageTransition>
+                <Profile />
+              </PageTransition>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/history"
+          element={
+            <ProtectedRoute>
+              <PageTransition>
+                <History />
+              </PageTransition>
+            </ProtectedRoute>
+          }
+        />
       </Routes>
-    </BrowserRouter>
+    </AnimatePresence>
   );
 };
+
+
+const MainApp = () => (
+  <BrowserRouter>
+    <AnimatedRoutes />
+  </BrowserRouter>
+);
 
 // Added this block of code because without this nothing will show up on the browser because the components are not being rendered anywhere.
 ReactDOM.createRoot(document.getElementById("root")).render(
