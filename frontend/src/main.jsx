@@ -3,7 +3,6 @@ import ReactDOM from "react-dom/client"; //Mounts React app into the real HTML (
 import { BrowserRouter, Routes, Route } from "react-router-dom"; // Handles page navigation
 import { AnimatePresence, motion } from "framer-motion";
 import { useLocation } from 'react-router-dom';
-
 import SignUp from "./pages/signup.jsx";
 import LogIn from "./pages/login.jsx";
 import Home from "./pages/dueminder_home.jsx";
