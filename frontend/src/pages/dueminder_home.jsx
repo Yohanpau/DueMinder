@@ -43,7 +43,7 @@ function BillCard({ bill, onEdit, onDelete, onPaid }) {
             <div className="absolute right-[0.2em] mt-[0.1em] w-[4.5em] bg-[#FE7531] rounded shadow-lg z-50">
               <button
                 onClick={() => {
-                  handleDelete(bill);
+                  onEdit(bill);
                   setShowMenu(false);
                 }}
                 className="w-full px-3 py-1 text-left active:bg-gray-100 active:rounded active:text-[#FE7531] ease-in-out"
