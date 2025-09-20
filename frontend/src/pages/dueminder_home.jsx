@@ -76,6 +76,22 @@ export default function Home() {
     return stored ? JSON.parse(stored) : [];
   });
 
+  //getting bills after authentication
+   useEffect(() => {
+    const fetchBills = async () => {
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://localhost:3000/bills", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      setBills(data);
+    };
+
+    fetchBills();
+  }, []);
+
   // Budget
   const [budget, setBudget] = useState(() => {
     const storedBudget = localStorage.getItem("userBudget");

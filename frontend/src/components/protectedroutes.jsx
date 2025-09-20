@@ -5,12 +5,4 @@ const ProtectedRoute = ({ children }) => {
     return isAuthenticated ? children : <Navigate to="/" />;
 };
 
-const token = localStorage.getItem("token");
-
-const response = await fetch("http://localhost:3000/bills", {
-  headers: {
-    "Authorization": `Bearer ${token}`,
-  },
-});
-
 export default ProtectedRoute;

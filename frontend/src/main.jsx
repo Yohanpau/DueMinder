@@ -10,7 +10,7 @@ import Profile from "./pages/dueminder_profile.jsx";
 import "/index.css";
 
 //Since we don't have app.jsx, we just put this block of code to the main,jsx instead
-const MainApp = () => { // changed into arrow function insteat of just a function
+const MainApp = () => { // changed into arrow function instead of just a function
   return (
     <BrowserRouter>
       <Routes>
