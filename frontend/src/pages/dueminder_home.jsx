@@ -25,7 +25,7 @@ function BillCard({ bill, onEdit, onDelete, onPaid }) {
         <div className="relative inline-block text-left">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="p-1 rounded-full active:bg-[#464646]"
+            className="p-1 rounded-full active:bg-[#464646] ease-in-out duration-300"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -46,7 +46,7 @@ function BillCard({ bill, onEdit, onDelete, onPaid }) {
                   onEdit(bill);
                   setShowMenu(false);
                 }}
-                className="w-full px-3 py-1 text-left active:bg-gray-100 active:rounded active:text-[#FE7531]"
+                className="w-full px-3 py-1 text-left active:bg-gray-100 active:rounded active:text-[#FE7531] ease-in-out"
               >
                 Edit
               </button>
@@ -422,13 +422,13 @@ Answer based on the budget and bill data. Your response should only be a short s
             <div className="flex justify-center gap-2 pt-2">
               <button
                 onClick={handleSubmit}
-                className="w-[50%] py-2 font-bold bg-[#FE7531] active:opacity-80 rounded-full"
+                className="w-[50%] py-2 font-bold bg-[#FE7531] active:opacity-80 rounded-full active:scale-90 ease-in-out"
               >
                 Update
               </button>
               <button
                 onClick={closeModal}
-                className="w-[50%] py-2 bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full"
+                className="w-[50%] py-2 font-bold bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full active:scale-90 ease-in-out"
               >
                 Cancel
               </button>

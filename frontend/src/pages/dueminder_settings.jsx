@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import DueMinderAIUI from "./dueminder.conversation";
 import emailjs from "emailjs-com";
 import EmailReminderHandler from "./EmailReminderHandler";
+import { Link } from "react-router-dom";
 
 function Settings() {
   // AI
@@ -73,9 +74,9 @@ function Settings() {
       {/* Upper icons */}
       <div className="flex flex-row justify-between align-middle w-[100%] mt-[2em] mb-[1em] text-white">
         {/* Back to bills */}
-        <a
-          href="/home"
-          className="flex flex-row align-middle justify-center w-fit h-fit gap-1"
+        <Link
+          to="/home"
+          className="flex flex-row align-middle justify-center w-fit h-fit gap-1 hover:underline"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -91,8 +92,8 @@ function Settings() {
               d="M15 19l-7-7 7-7"
             />
           </svg>
-          <p className="mt-[-0.2em]">Back to my bills</p>
-        </a>
+          <p className="mt-[-0.2em]">Back to My Bills</p>
+        </Link>
 
         {/* AI icon */}
         <button onClick={() => setChatbotOpen(!chatbotOpen)}>

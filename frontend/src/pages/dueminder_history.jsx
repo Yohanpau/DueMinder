@@ -31,23 +31,23 @@ export default function History() {
         <div>
             <Link
                 to="/settings"
-                className="flex items-center text-white text-[4vw] font-medium hover:underline mt-[6.5vh]"
+                className="flex flex-row gap-1 items-center align-middle text-white text-[4vw] font-medium active:underline mt-[2rem]"
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 mr-2"
+                    className="w-5 h-5"
                     fill="none"
                     viewBox="0 0 24 24"
-                    stroke="white"
+                    stroke="currentColor"
+                    strokeWidth={2}
                 >
                     <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        strokeWidth={2}
                         d="M15 19l-7-7 7-7"
                     />
                 </svg>
-                Back to settings
+                <p className="mt-[-0.2em] font-normal text-[1rem]">Back to Settings</p>
             </Link>
             <h2 className="text-[1.5rem]/[1em] font-bold text-white mt-[5vh] mb-[3.5vh] ml-[1vw]">Bills History</h2>
             <PaidBillsCard />

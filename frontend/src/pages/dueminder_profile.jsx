@@ -95,7 +95,7 @@ function Profile() {
               d="M15 19l-7-7 7-7"
             />
           </svg>
-          <p className="mt-[-0.2em]">Back to settings</p>
+          <p className="mt-[-0.2em]">Back to Settings</p>
         </a>
 
         {/* AI icon */}
