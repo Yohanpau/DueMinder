@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import DueMinderAIUI from "./dueminder.conversation";
 import EmailReminderHandler from "./EmailReminderHandler";
@@ -6,20 +6,26 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Suggestion from './suggestion_message';
 import shuffle from "lodash.shuffle";
-import api from "./api"; // Axios instance
+import { HiX } from "react-icons/hi";
+import { FaCheckCircle } from "react-icons/fa";
+import { CSSTransition, TransitionGroup } from 'react-transition-group';
+import { useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Function for bill cards
-function BillCard({ bill, onEdit, onDelete }) {
+function BillCard({ bill, onEdit, onDelete, onPaid }) {
   const [showMenu, setShowMenu] = useState(false);
+  const location = useLocation();
 
   return (
+
     <div className="flex flex-col justify-between align-middle h-[30%] w-[100%] bg-[#111111] border-[#464646] border-[0.063em] rounded-[1.25em] p-[1.1em]">
       <div className="flex flex-row justify-between">
         <h3 className="text-[1.25rem] font-bold">{bill.name}</h3>
         <div className="relative inline-block text-left">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="p-1 rounded-full active:bg-[#464646]"
+            className="p-1 rounded-full active:bg-[#464646] ease-in-out duration-300"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -37,21 +43,30 @@ function BillCard({ bill, onEdit, onDelete }) {
             <div className="absolute right-[0.2em] mt-[0.1em] w-[4.5em] bg-[#FE7531] rounded shadow-lg z-50">
               <button
                 onClick={() => {
-                  onEdit(bill);
+                  handleDelete(bill);
                   setShowMenu(false);
                 }}
-                className="w-full px-3 py-1 text-left active:bg-gray-100 active:rounded active:text-[#FE7531]"
+                className="w-full px-3 py-1 text-left active:bg-gray-100 active:rounded active:text-[#FE7531] ease-in-out"
               >
                 Edit
               </button>
               <button
                 onClick={() => {
-                  onDelete(bill.id);
+                  onDelete(bill);
                   setShowMenu(false);
                 }}
                 className="w-full px-3 py-1 text-left text-[#FFF6F2] active:bg-gray-100 active:rounded active:text-[#FE7531]"
               >
                 Delete
+              </button>
+              <button
+                onClick={() => {
+                  onPaid(bill.id);
+                  setShowMenu(false);
+                }}
+                className="w-full px-3 py-1 text-left text-[#FFF6F2] active:bg-gray-100 active:rounded active:text-[#FE7531]"
+              >
+                Paid
               </button>
             </div>
           )}
@@ -66,84 +81,31 @@ function BillCard({ bill, onEdit, onDelete }) {
   );
 }
 
+
 // Main component
 export default function Home() {
-  const datePickerRef = useRef(null);
-
   // Bills information
   const [bills, setBills] = useState(() => {
     const stored = localStorage.getItem("bills");
     return stored ? JSON.parse(stored) : [];
   });
 
-  // Budget
-  const [budget, setBudget] = useState(() => {
-    const storedBudget = localStorage.getItem("userBudget");
-    return storedBudget ? JSON.parse(storedBudget) : 0;
-  });
+  // Sets the budget
+  const [budget, setBudget] = useState(0);
 
   // AI
   const [chatbotOpen, setChatbotOpen] = useState(false);
+  // Suggestion Pop-up
   const [suggestionMessage, setSuggestionMessage] = useState(null);
-
-  //Dropdown sorts
-  const [open, setOpen] = useState(false);
-  const options = ["All", "High", "Medium", "Low"];
-
-  //For both add and edit bill
-  const today = new Date().toISOString().split("T")[0];
-
-  //Editing
-  const [editingBill, setEditingBill] = useState(null);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editBill, setEditBill] = useState({
-    name: "",
-    amount: "",
-    dueDate: today,
-    priority: "All",
-  });
-
-  // State for adding bill modal
-  const defaultNewBill = {
-    name: "",
-    amount: "",
-    dueDate: new Date(),
-    priority: "Medium",
-  };
-  const [newBill, setNewBill] = useState(defaultNewBill);
-  const [showModal, setShowModal] = useState(false);
-
-  // Priority filter
-  const [selected, setSelected] = useState("All");
-
-  // Search bar
-  const [searchQuery, setSearchQuery] = useState("");
-
-  // Compute the total amount of bills
-  const totalAmount = bills.reduce((sum, bill) => sum + Number(bill.amount), 0);
-  const remaining = budget - totalAmount;
-
-  // Filters bills based on priority and search
-  const filteredBills = bills.filter((bill) => {
-    const matchesPriority = selected === "All" || bill.priority === selected;
-    const matchesSearch =
-      bill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      bill.amount.toString().includes(searchQuery);
-    return matchesPriority && matchesSearch;
-  });
 
   // Suggestion Prompt
   const generateShortPrompt = (bills, budget) => {
-    const billText = bills
-      .map(
-        (b) =>
-          `- ${b.name} (Priority: ${b.priority}) due on ${b.dueDate} with amount ₱${b.amount}`
-      )
-      .join("\n");
+    const billText = bills.map(
+      (b) =>
+        `- ${b.name} (Priority: ${b.priority}) due on ${b.dueDate} with amount ₱${b.amount}`
+    ).join("\n");
 
-    const budgetText = `The user's current budget is ₱${parseFloat(
-      budget || 0
-    ).toFixed(2)}.`;
+    const budgetText = `The user's current budget is ₱${parseFloat(budget || 0).toFixed(2)}.`;
 
     return `You are DueMinder, a helpful assistant that assists users in managing bills, subscriptions, and reminders.
 
@@ -155,7 +117,7 @@ ${budgetText}
 Answer based on the budget and bill data. Your response should only be a short sentence like a reminder.`;
   };
 
-  // Suggestion AI Logic
+  //Suggestion AI Logic
   useEffect(() => {
     let isCancelled = false;
     let hideTimeout, interval;
@@ -171,10 +133,9 @@ Answer based on the budget and bill data. Your response should only be a short s
         });
 
         const data = await res.json();
-        const suggestion =
-          data.reply.length > 150
-            ? data.reply.slice(0, 147) + "..."
-            : data.reply;
+        const suggestion = data.reply.length > 150
+          ? data.reply.slice(0, 147) + "..."
+          : data.reply;
 
         if (!isCancelled && suggestion) {
           setSuggestionMessage(suggestion);
@@ -195,7 +156,7 @@ Answer based on the budget and bill data. Your response should only be a short s
     // Then repeat every 30 minutes
     interval = setInterval(() => {
       fetchAndShowSuggestion();
-    }, 30 * 60 * 1000);
+    }, 30 * 60 * 1000); // 30 minutes
 
     return () => {
       isCancelled = true;
@@ -204,35 +165,24 @@ Answer based on the budget and bill data. Your response should only be a short s
     };
   }, [bills, budget]);
 
-  // Fetch bills from backend
-  useEffect(() => {
-    const fetchBills = async () => {
-      try {
-        const response = await api.get("/bills");
-        setBills(response.data);
-      } catch (err) {
-        console.error("Error fetching bills", err);
-      }
-    };
-    fetchBills();
-  }, []);
+  //Dropdown sorts
+  const [open, setOpen] = useState(false);
+  const options = ["All", "High", "Medium", "Low"];
+  const paidOptions = ["Cash", "Bank", "E-Wallet"];
 
-  // ------------------ BILL MODAL HANDLERS ------------------
-  const openAddModal = () => {
-    setNewBill(defaultNewBill);
-    setShowModal(true);
-  };
+  //For both add and edit bill
+  const today = new Date().toISOString().split("T")[0];
 
-  const handleAddBill = async () => {
-    try {
-      const response = await api.post("/bills", newBill);
-      setBills([...bills, response.data]);
-      setShowModal(false);
-      setNewBill(defaultNewBill);
-    } catch (err) {
-      console.error("Error adding bill", err);
-    }
-  };
+  //Editing
+  const [editingBill, setEditingBill] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  const [editBill, setEditBill] = useState({
+    name: "",
+    amount: "",
+    dueDate: today,
+    priority: "All",
+  });
 
   const handleEdit = (bill) => {
     setEditingBill(bill);
@@ -245,50 +195,126 @@ Answer based on the budget and bill data. Your response should only be a short s
     setShowEditModal(true);
   };
 
-  const handleSubmit = async () => {
-  if (editingBill) {
-    try {
-      // Make sure dueDate is saved in correct format
-      const payload = {
-        ...newBill,
-        dueDate: new Date(newBill.dueDate).toISOString(),
-      };
-
-      const response = await api.put(`/bills/${editingBill.id}`, payload);
-
-      // Update state instantly (real-time effect)
-      setBills((prev) =>
-        prev.map((bill) =>
-          bill.id === editingBill.id ? response.data : bill
-        )
-      );
-
-      setEditingBill(null);
-      setShowEditModal(false);
-    } catch (error) {
-      console.error("Error updating bill:", error);
-    }
-  }
-};
-
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm("Delete this bill?");
-    if (!confirmDelete) return;
-
-    try {
-      await api.delete(`/bills/${id}`);
-      setBills(bills.filter((bill) => bill.id !== id));
-    } catch (err) {
-      console.error("Error deleting bill", err);
-    }
-  };
-
   const closeModal = () => {
     setShowEditModal(false);
     setEditingBill(null);
-    setNewBill(defaultNewBill);
+    setNewBill({
+      name: "",
+      amount: "",
+      dueDate: "",
+      priority: "All",
+    });
   };
 
+  const handleSubmit = () => {
+    if (editingBill) {
+      // Editing existing bill
+      const updatedBills = bills.map((bill) =>
+        bill.id === editingBill.id ? { ...editingBill, ...newBill } : bill
+      );
+      setBills(updatedBills);
+      localStorage.setItem("bills", JSON.stringify(updatedBills));
+      setEditingBill(null);
+      setShowEditModal(false);
+    }
+  };
+
+  //Deleting
+  const [deleteBill, setDeleteBill] = useState(null);
+  const [showDeleteModal, setDeleteModal] = useState(false);
+
+  const handleDelete = (bill) => {
+    setDeleteBill(bill);
+    setDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    if (deleteBill) {
+      const updatedBills = bills.filter((b) => b.id !== deleteBill.id);
+      setBills(updatedBills)
+      localStorage.setItem("bills", JSON.stringify(updatedBills));
+      setDeleteBill(null);
+      setDeleteModal(false);
+    }
+  };
+
+  const cancelDelete = () => {
+    setDeleteBill(null);
+    setDeleteModal(false);
+  };
+
+  //Paid Bill Modal
+  const [payingBill, setPayingBill] = useState(null);
+  const [showPaidModal, setShowPaidModal] = useState(false);
+  const [showPaidConfirmation, setShowPaidConfirmation] = useState(false);
+
+  const handlePaid = (id) => {
+    setPayingBill(id);
+    setShowPaidModal(true);
+  }
+
+  const handlePaidSubmit = (id) => {
+    setShowPaidConfirmation(true);
+  }
+
+  const closePaidModal = () => {
+    setPayingBill(null);
+    setShowPaidModal(false);
+    setShowPaidConfirmation(false);
+  }
+
+  //Paid bill new state
+  const defaultPaidBill = {
+    name: "",
+    paymentMethod: "",
+    paidDate: new Date(),
+  };
+  const [newPaidBill, setNewPaidBill] = useState(defaultPaidBill);
+
+  // Adding bill modal
+  const defaultNewBill = {
+    name: "",
+    amount: "",
+    dueDate: new Date(), // react-datepicker uses Date objects
+    priority: "Medium",
+  };
+  const [newBill, setNewBill] = useState(defaultNewBill);
+  const [showModal, setShowModal] = useState(false);
+
+  const openAddModal = () => {
+    setNewBill(defaultNewBill); // Reset form
+    setShowModal(true);
+  };
+
+  useEffect(() => {
+    const storedBudget = localStorage.getItem("userBudget");
+    if (storedBudget) {
+      setBudget(JSON.parse(storedBudget));
+    }
+  }, []);
+
+  // Compute the total amount of bills
+  const totalAmount = bills.reduce((sum, bill) => sum + Number(bill.amount), 0);
+
+  // Compare the total amount of bills and the budget
+  const remaining = budget - totalAmount;
+
+  // For priority filter
+  const [selectedPriority, setSelectedPriority] = useState("All");
+
+  const [selected, setSelected] = useState("All"); // Dropdown selection
+
+  // Search bar
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filters bills base on priority
+  const filteredBills = bills.filter((bill) => {
+    const matchesPriority = selected === "All" || bill.priority === selected;
+    const matchesSearch =
+      bill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      bill.amount.toString().includes(searchQuery);
+    return matchesPriority && matchesSearch;
+  });
 
   return (
     <>
@@ -302,8 +328,11 @@ Answer based on the budget and bill data. Your response should only be a short s
           budget={Number(budget)}
         />
         {/* Suggestion Pop-up */}
-        {suggestionMessage && <Suggestion message={suggestionMessage} />}
+        {(
+          suggestionMessage && <Suggestion message={suggestionMessage} />
+        )}
       </div>
+
 
       {/* Edit Modal */}
       {showEditModal && (
@@ -334,27 +363,24 @@ Answer based on the budget and bill data. Your response should only be a short s
             <div className="flex flex-row gap-2 w-full">
               <div className="flex flex-row relative">
                 <DatePicker
-                  ref={datePickerRef}
                   selected={newBill.dueDate ? new Date(newBill.dueDate) : null}
                   onChange={(date) =>
                     setNewBill({
                       ...newBill,
-                      dueDate: date.toISOString().split("T")[0], // YYYY-MM-DD format
+                      dueDate: date.toISOString().split("T")[0], // same format as before (YYYY-MM-DD)
                     })
                   }
                   placeholderText="MM/DD/YY"
                   dateFormat="MM/dd/yy"
                   className="w-full p-2 pl-3 rounded bg-[#1a1a1a] border border-[#464646] text-white outline-[#FFF6F2]"
                 />
-
                 <svg
-                  onClick={() => datePickerRef.current.setOpen(true)}
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
                   strokeWidth="1.5"
                   stroke="currentColor"
-                  className="w-5 h-5 text-white opacity-60 absolute right-3 top-[0.7em] cursor-pointer"
+                  className="w-5 h-5 text-white opacity-60 absolute right-3 top-[0.7em]"
                 >
                   <path
                     strokeLinecap="round"
@@ -389,9 +415,8 @@ Answer based on the budget and bill data. Your response should only be a short s
                 <div className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className={`h-4 transition-transform duration-200 ${
-                      open ? "rotate-180" : ""
-                    }`}
+                    className={`h-4 transition-transform duration-200 ${open ? "rotate-180" : ""
+                      }`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -410,12 +435,125 @@ Answer based on the budget and bill data. Your response should only be a short s
             <div className="flex justify-center gap-2 pt-2">
               <button
                 onClick={handleSubmit}
-                className="w-[50%] py-2 font-bold bg-[#FE7531] active:opacity-80 rounded-full"
+                className="w-[50%] py-2 font-bold bg-[#FE7531] active:opacity-80 rounded-full active:scale-90 ease-in-out"
               >
                 Update
               </button>
               <button
                 onClick={closeModal}
+                className="w-[50%] py-2 font-bold bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full active:scale-90 ease-in-out"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Deleting Bill Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-[#010101] bg-opacity-70 flex justify-center items-center z-50">
+          <div className="w-[60%] max-w-md bg-[#111111] p-6 rounded-xl text-white border border-[#464646] relative">
+            <h2 className="text-[5.5vw] font-bold text-[#FE7531]">Delete Bill</h2>
+            <p>Are you sure you want to delete <strong>{deleteBill?.name}</strong>?</p>
+              <div className="flex flex-col justify-center gap-2 pt-4">
+                <button
+                  onClick={confirmDelete}
+                  className="w-full py-2 font-bold bg-[#FE7531] active:opacity-80 rounded-full">
+                  Delete
+                </button>
+                <button
+                  onClick={cancelDelete}
+                  className="w-full py-2 bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full"
+                >
+                  Cancel
+                </button>
+              </div>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Method Modal */}
+      {showPaidModal && (
+        <div className="fixed inset-0 bg-[#010101] bg-opacity-70 flex justify-center items-center z-50">
+          <div className="bg-[#111111] p-6 rounded-xl w-[90%] max-w-md text-white space-y-4">
+            <h2 className="text-[5.5vw] font-bold text-[#FE7531]">Payment Method</h2>
+
+            {/* Bill due date */}
+            <div className="gap-2 w-full">
+              <div className="relative w-full mb-5">
+                <p className="mb-2">Date of Payment</p>
+                <DatePicker
+                  selected={newPaidBill.dueDate ? new Date(newPaidBill.dueDate) : null}
+                  onChange={(date) =>
+                    setNewPaidBill({
+                      ...newPaidBill,
+                      dueDate: date.toISOString().split("T")[0], // same format as before (YYYY-MM-DD)
+                    })
+                  }
+                  placeholderText="MM/DD/YY"
+                  dateFormat="MM/dd/yy"
+                  className="w-[142.42%] p-2 pl-3 rounded bg-[#1a1a1a] border border-[#464646] text-white outline-[#FFF6F2]"
+                />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="w-7 h-8 text-white opacity-60 absolute right-3 top-[2.2em]"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M8.25 6V4.5m7.5 1.5V4.5M3.75 9h16.5M4.5 5.25h15A1.5 1.5 0 0121 6.75v12a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 18.75v-12A1.5 1.5 0 014.5 5.25z"
+                  />
+                </svg>
+              </div>
+
+              {/* Bill payment method dropdown */}
+              <p className="mb-2">Payment Method</p>
+              <div className="relative w-full">
+                <select
+                  value={newPaidBill.paidOptions}
+                  onChange={(e) => setNewPaidBill({ ...newPaidBill, paidOptions: e.target.value })}
+                  className="appearance-none w-full px-4 py-2 bg-[#1a1a1a] border border-[#464646] text-white rounded"
+                >
+                  <option value="" disabled>Choose Mode of Payment</option>
+                  {paidOptions.map((method) => (
+                    <option key={method} value={method}>{method}</option>
+                  ))}
+                </select>
+
+                <div className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`h-4 transition-transform duration-200 ${open ? "rotate-180" : ""
+                      }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-center gap-2 pt-2">
+              <button
+                onClick={handlePaidSubmit}
+                className="w-[50%] py-2 font-bold bg-[#FE7531] active:opacity-80 rounded-full"
+              >
+                Save
+              </button>
+              <button
+                onClick={closePaidModal}
                 className="w-[50%] py-2 bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full"
               >
                 Cancel
@@ -424,6 +562,35 @@ Answer based on the budget and bill data. Your response should only be a short s
           </div>
         </div>
       )}
+
+      {/* PAID CONFIRMATION MODAL */}
+      {showPaidConfirmation && (
+        <div className="fixed inset-0 bg-[#010101] bg-opacity-70 flex justify-center items-center z-50">
+          <div className="w-[60%] max-w-md bg-[#111111] p-6 rounded-xl text-white border border-[#464646] relative">
+
+            <button
+              onClick={closePaidModal}
+              className="absolute top-3 right-3 text-[7.5vw] text-[#FE7531]"
+            >
+              <HiX />
+            </button>
+
+            {/* Title */}
+            <h1 className="text-[#FE7531] font-bold text-[6vw] text-center my-4">
+              Saved to bills history!
+            </h1>
+
+            {/* Icon centered */}
+            <div className="flex justify-center">
+              <div className="bg-[#FE7531] rounded-full inline-flex items-center justify-center">
+                <FaCheckCircle className="text-white w-[20vw] h-[20vw]" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       {/* Upper icons */}
       <div className="flex flex-row justify-between w-[100%] mt-[2em] mb-[1em]">
         {/* AI icon */}
@@ -538,9 +705,8 @@ Answer based on the budget and bill data. Your response should only be a short s
               <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className={`h-4 transition-transform duration-200 ${
-                    open ? "rotate-180" : ""
-                  }`}
+                  className={`h-4 transition-transform duration-200 ${open ? "rotate-180" : ""
+                    }`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -557,7 +723,7 @@ Answer based on the budget and bill data. Your response should only be a short s
           </div>
         </div>
         {/* Bills list */}
-        <div className="flex flex-col gap-[0.375em] h-full overflow-auto">
+        <div className="flex flex-col gap-2 h-full overflow-auto">
           {/* First Bill */}
           {filteredBills.map((bill) => (
             <BillCard
@@ -565,6 +731,7 @@ Answer based on the budget and bill data. Your response should only be a short s
               bill={bill}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onPaid={handlePaid}
             />
           ))}
         </div>
@@ -625,11 +792,8 @@ Answer based on the budget and bill data. Your response should only be a short s
                 {/* Bill due date */}
                 <div className="flex flex-row relative">
                   <DatePicker
-                    ref={datePickerRef}
                     selected={newBill.dueDate}
-                    onChange={(date) =>
-                      setNewBill({ ...newBill, dueDate: date })
-                    }
+                    onChange={(date) => setNewBill({ ...newBill, dueDate: date })}
                     dateFormat="MM/dd/yy"
                     placeholderText="MM/DD/YY"
                     className="w-full p-2 pl-3 rounded bg-[#1a1a1a] border border-[#464646] text-white outline-[#FFF6F2]"
@@ -641,8 +805,7 @@ Answer based on the budget and bill data. Your response should only be a short s
                     viewBox="0 0 24 24"
                     strokeWidth="1.5"
                     stroke="currentColor"
-                    className="w-5 h-5 text-white opacity-60 absolute right-3 top-[0.7em] cursor-pointer"
-                    onClick={() => datePickerRef.current.setFocus()}
+                    className="w-5 h-5 text-white opacity-60 absolute right-3 top-[0.7em]"
                   >
                     <path
                       strokeLinecap="round"
@@ -678,9 +841,8 @@ Answer based on the budget and bill data. Your response should only be a short s
                   <div className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className={`h-4 transition-transform duration-200 ${
-                        open ? "rotate-180" : ""
-                      }`}
+                      className={`h-4 transition-transform duration-200 ${open ? "rotate-180" : ""
+                        }`}
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -698,20 +860,32 @@ Answer based on the budget and bill data. Your response should only be a short s
 
               <div className="flex justify-center gap-2 pt-2 w-full">
                 <button
-                  onClick={handleAddBill}
+                  onClick={() => {
+                    const billWithId = {
+                      ...newBill,
+                      id: Date.now(),
+                    };
+                    const updatedBills = [...bills, billWithId];
+                    setBills(updatedBills);
+                    localStorage.setItem("bills", JSON.stringify(updatedBills));
+
+                    // Reset modal and input
+                    setShowModal(false);
+                    setNewBill(defaultNewBill);
+                  }}
                   className="w-[50%] py-2 bg-[#FE7531] active:opacity-80 rounded-full font-bold"
                 >
                   Add
                 </button>
                 <button
-                onClick={() => {
-                  setShowModal(false);
-                  setNewBill(defaultNewBill); // reset form properly
-                }}
-                className="w-[50%] py-2 font-bold bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full"
-              >
-                Cancel
-              </button>
+                  onClick={() => {
+                    setShowModal(false);
+                    setNewBill(defaultNewBill);
+                  }}
+                  className="w-[50%] py-2 font-bold bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           </div>
