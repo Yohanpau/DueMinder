@@ -43,7 +43,7 @@ function BillCard({ bill, onEdit, onDelete, onPaid }) {
             <div className="absolute right-[0.2em] mt-[0.1em] w-[4.5em] bg-[#FE7531] rounded shadow-lg z-50">
               <button
                 onClick={() => {
-                  onEdit(bill);
+                  handleDelete(bill);
                   setShowMenu(false);
                 }}
                 className="w-full px-3 py-1 text-left active:bg-gray-100 active:rounded active:text-[#FE7531] ease-in-out"
@@ -52,7 +52,7 @@ function BillCard({ bill, onEdit, onDelete, onPaid }) {
               </button>
               <button
                 onClick={() => {
-                  onDelete(bill.id);
+                  onDelete(bill);
                   setShowMenu(false);
                 }}
                 className="w-full px-3 py-1 text-left text-[#FFF6F2] active:bg-gray-100 active:rounded active:text-[#FE7531]"
@@ -176,6 +176,7 @@ Answer based on the budget and bill data. Your response should only be a short s
   //Editing
   const [editingBill, setEditingBill] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
+
   const [editBill, setEditBill] = useState({
     name: "",
     amount: "",
@@ -183,12 +184,6 @@ Answer based on the budget and bill data. Your response should only be a short s
     priority: "All",
   });
 
-  //Paid Bill Modal
-  const [payingBill, setPayingBill] = useState(null);
-  const [showPaidModal, setShowPaidModal] = useState(false);
-  const [showPaidConfirmation, setShowPaidConfirmation] = useState(false);
-
-  // Delete and edit bill
   const handleEdit = (bill) => {
     setEditingBill(bill);
     setNewBill({
@@ -224,16 +219,35 @@ Answer based on the budget and bill data. Your response should only be a short s
     }
   };
 
-  const handleDelete = (id) => {
-    const confirmDelete = window.confirm("Delete this bill?");
-    if (confirmDelete) {
-      const updatedBills = bills.filter((bill) => bill.id !== id);
-      setBills(updatedBills);
+  //Deleting
+  const [deleteBill, setDeleteBill] = useState(null);
+  const [showDeleteModal, setDeleteModal] = useState(false);
+
+  const handleDelete = (bill) => {
+    setDeleteBill(bill);
+    setDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    if (deleteBill) {
+      const updatedBills = bills.filter((b) => b.id !== deleteBill.id);
+      setBills(updatedBills)
       localStorage.setItem("bills", JSON.stringify(updatedBills));
+      setDeleteBill(null);
+      setDeleteModal(false);
     }
   };
 
-  //PAID HISTORY LOGIC
+  const cancelDelete = () => {
+    setDeleteBill(null);
+    setDeleteModal(false);
+  };
+
+  //Paid Bill Modal
+  const [payingBill, setPayingBill] = useState(null);
+  const [showPaidModal, setShowPaidModal] = useState(false);
+  const [showPaidConfirmation, setShowPaidConfirmation] = useState(false);
+
   const handlePaid = (id) => {
     setPayingBill(id);
     setShowPaidModal(true);
@@ -249,16 +263,6 @@ Answer based on the budget and bill data. Your response should only be a short s
     setShowPaidConfirmation(false);
   }
 
-  // State for adding bill modal
-  const defaultNewBill = {
-    name: "",
-    amount: "",
-    dueDate: new Date(), // react-datepicker uses Date objects
-    priority: "Medium",
-  };
-  const [newBill, setNewBill] = useState(defaultNewBill);
-  const [showModal, setShowModal] = useState(false);
-
   //Paid bill new state
   const defaultPaidBill = {
     name: "",
@@ -267,6 +271,15 @@ Answer based on the budget and bill data. Your response should only be a short s
   };
   const [newPaidBill, setNewPaidBill] = useState(defaultPaidBill);
 
+  // Adding bill modal
+  const defaultNewBill = {
+    name: "",
+    amount: "",
+    dueDate: new Date(), // react-datepicker uses Date objects
+    priority: "Medium",
+  };
+  const [newBill, setNewBill] = useState(defaultNewBill);
+  const [showModal, setShowModal] = useState(false);
 
   const openAddModal = () => {
     setNewBill(defaultNewBill); // Reset form
@@ -433,6 +446,29 @@ Answer based on the budget and bill data. Your response should only be a short s
                 Cancel
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Deleting Bill Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-[#010101] bg-opacity-70 flex justify-center items-center z-50">
+          <div className="w-[60%] max-w-md bg-[#111111] p-6 rounded-xl text-white border border-[#464646] relative">
+            <h2 className="text-[5.5vw] font-bold text-[#FE7531]">Delete Bill</h2>
+            <p>Are you sure you want to delete <strong>{deleteBill?.name}</strong>?</p>
+              <div className="flex flex-col justify-center gap-2 pt-4">
+                <button
+                  onClick={confirmDelete}
+                  className="w-full py-2 font-bold bg-[#FE7531] active:opacity-80 rounded-full">
+                  Delete
+                </button>
+                <button
+                  onClick={cancelDelete}
+                  className="w-full py-2 bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full"
+                >
+                  Cancel
+                </button>
+              </div>
           </div>
         </div>
       )}
