@@ -20,7 +20,7 @@ function PaidBillsCard({ bill }) {
             Payment Date: {new Date(bill.paidDate).toLocaleDateString()}
           </p>
         </div>
-        <div className="w-[86px] h-[36px] bg-[#4D1717] rounded-full text-white flex items-center justify-center">
+        <div className="w-[86px] h-[36px] bg-[#1e5f29] rounded-full text-white flex items-center justify-center">
           {bill.status || "Paid"}
         </div>
       </div>
