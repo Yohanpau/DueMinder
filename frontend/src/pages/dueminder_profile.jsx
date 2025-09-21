@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import DueMinderAIUI from "./dueminder.conversation";
 import ProfileUploader from "./upload_image";
+import { Link } from "react-router-dom";
 
 function Profile() {
   // AI
@@ -65,6 +66,13 @@ function Profile() {
     alert("Password updated successfully!");
   };
 
+  const [showModal, setShowModal] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    localStorage.setItem("userBudget", JSON.stringify(budget));
+    setShowModal(true);          // 👈 open modal instead of alert
+  };
 
   return (
     <>
@@ -77,9 +85,9 @@ function Profile() {
       {/* Upper icons */}
       <div className="flex flex-row justify-between align-middle w-[100%] mt-[2em] mb-[1em] text-white">
         {/* Back to settings */}
-        <a
-          href="/settings"
-          className="flex flex-row align-middle justify-center w-fit h-fit gap-1"
+        <Link
+          to="/settings"
+          className="flex flex-row align-middle justify-center w-fit h-fit gap-1 active:underline"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -96,7 +104,7 @@ function Profile() {
             />
           </svg>
           <p className="mt-[-0.2em]">Back to Settings</p>
-        </a>
+        </Link>
 
         {/* AI icon */}
         <button onClick={() => setChatbotOpen(!chatbotOpen)}>
@@ -137,17 +145,13 @@ function Profile() {
 
         {/* Profile edit and input */}
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            localStorage.setItem("userBudget", JSON.stringify(budget));
-            alert("Saved!");
-          }}
+          onSubmit={handleSubmit}
           className="flex flex-col items-center justify-center gap-8 text-[#e7deda]"
         >
           <div className="flex flex-col w-[100%] text-[1.1rem] gap-[1.063em]">
             {/* Budget field */}
             <div className="flex flex-col gap-1">
-              <label htmlFor="budget" id="budget" className="text-[#FE7531]">
+              <label htmlFor="budget" id="budget" className="text-[#e7deda]">
                 Budget
               </label>
               <div className="relative">
@@ -162,7 +166,7 @@ function Profile() {
                   onChange={handleBudgetChange}
                   onBlur={handleBlur}
                   disabled={!isEditing}
-                  className={`w-[100%] h-[2.813em] p-[0.875em] rounded-[0.625em] bg-transparent border-[#FE7531] border-[0.063em] ${
+                  className={`w-[100%] h-[2.813em] p-[0.875em] rounded-[0.625em] bg-transparent border-[#e7deda] border outline-[#FE7531] ${
                     !isEditing ? "text-[#a1a1a1] cursor-not-allowed" : ""
                   }`}
                 />
@@ -170,7 +174,7 @@ function Profile() {
                   <button
                     type="button"
                     onClick={handleEditClick}
-                    className="flex items-center justify-center text-[#e7deda] active:bg-[#5050505e] rounded-full p-1 active:text-[#e7deda] transition-transform duration-300 ease-in-out absolute right-[4.5%] top-[17%]"
+                    className="flex items-center justify-center text-[#FE7531] active:bg-[#5050505e] rounded-full p-1 active:text-[#e7deda] transition-transform duration-300 ease-in-out absolute right-[4.5%] top-[17%]"
                     aria-label="Edit"
                   >
                     {/* Pencil SVG Icon */}
@@ -195,7 +199,7 @@ function Profile() {
 
             {/* Full name field */}
             <div className="flex flex-col gap-1 text-[1.1rem]">
-              <label htmlFor="name" id="name" className="text-[#FE7531]">
+              <label htmlFor="name" id="name" className="text-[#e7deda]">
                 Full Name
               </label>
               <div className="relative">
@@ -215,7 +219,7 @@ function Profile() {
                   name="name"
                   id="name"
                   required
-                  className={`w-full h-[2.813em] p-[0.875em] rounded-[0.625em] bg-transparent border-[#FE7531] border-[0.063em] ${
+                  className={`w-full h-[2.813em] p-[0.875em] rounded-[0.625em] bg-transparent border-[#e7deda] border-[0.063em] outline-[#FE7531] ${
                     !isEditingName
                       ? "text-[#a5a5a5] cursor-not-allowed"
                       : "text-white bg-transparent"
@@ -225,7 +229,7 @@ function Profile() {
                   <button
                     type="button"
                     onClick={() => setIsEditingName(true)}
-                    className="flex items-center justify-center text-[#e7deda] active:bg-transparent rounded-full p-1 active:text-[#e7deda] transition-transform duration-300 ease-in-out absolute right-[4.5%] top-[17%]"
+                    className="flex items-center justify-center text-[#FE7531] active:bg-transparent rounded-full p-1 active:text-[#e7deda] transition-transform duration-300 ease-in-out absolute right-[4.5%] top-[17%]"
                     aria-label="Edit"
                   >
                     {/* Pencil SVG Icon */}
@@ -250,7 +254,7 @@ function Profile() {
 
             {/* Email field */}
             <div className="flex flex-col gap-1 text-[1.1rem]">
-              <label htmlFor="email" id="email" className="text-[#FE7531]">
+              <label htmlFor="email" id="email" className="text-[#e7deda]">
                 Email
               </label>
               <input
@@ -260,7 +264,7 @@ function Profile() {
                 name="email"
                 id="email"
                 required
-                className="h-[2.813em] p-[0.875em] rounded-[0.625em] bg-transparent text-[#a5a5a5] border-[#FE7531] border-[0.063em] cursor-not-allowed"
+                className="h-[2.813em] p-[0.875em] rounded-[0.625em] bg-transparent text-[#a5a5a5] border-[#e7deda] border-[0.063em] cursor-not-allowed"
               />
             </div>
 
@@ -270,14 +274,14 @@ function Profile() {
                 <label
                   htmlFor="password"
                   id="password"
-                  className="text-[#FE7531]"
+                  className="text-[#e7deda]"
                 >
                   Password
                 </label>
                 <button
                   onClick={() => setIsModalOpen(true)}
                   type="button"
-                  className="flex w-[100%] justify-end text-[1rem] underline"
+                  className="flex w-[100%] justify-end text-[1rem] underline text-[#FE7531]"
                 >
                   Change Password?
                 </button>
@@ -290,7 +294,7 @@ function Profile() {
                   name="password"
                   id="password"
                   required
-                  className="w-[100%] h-[2.813em] p-[0.875em] rounded-[0.625em] bg-transparent text-[#a5a5a5] border-[#FE7531] border-[0.063em] cursor-not-allowed"
+                  className="w-[100%] h-[2.813em] p-[0.875em] rounded-[0.625em] bg-transparent text-[#a5a5a5] border-[#e7deday] border-[0.063em] cursor-not-allowed"
                 />
               </div>
             </div>
@@ -309,20 +313,20 @@ function Profile() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Enter new password"
-                  className="w-full p-2 mb-4 rounded bg-transparent border border-[#FE7531]"
+                  className="w-full p-3 mb-4 bg-transparent border-[0.063em] border-[#e7deda] rounded-xl outline-[#FE7531]"
                 />
-                <div className="flex justify-end gap-3">
-                  <button
-                    onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 rounded bg-gray-600 active:bg-gray-700"
-                  >
-                    Cancel
-                  </button>
+                <div className="flex justify-center gap-3">
                   <button
                     onClick={handlePasswordChange}
-                    className="px-4 py-2 rounded bg-[#FE7531] font-bold"
+                    className="px-4 py-2 bg-[#FE7531] font-bold rounded-full w-full"
                   >
                     Save
+                  </button>
+                  <button
+                    onClick={() => setIsModalOpen(false)}
+                    className="px-4 py-2 rounded-full border border-[#e7deda] active:bg-gray-700 w-full"
+                  >
+                    Cancel
                   </button>
                 </div>
               </div>
@@ -335,6 +339,22 @@ function Profile() {
           </button>
         </form>
       </div>
+
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/70 z-50">
+          <div className="bg-[#111111] p-6 rounded-xl border border-[#464646] text-white w-[90%] max-w-sm text-center">
+            <h2 className="text-xl font-bold text-[#FE7531]">Profile Saved!</h2>
+            <p className="mt-2">Your profile has been changed successfully.</p>
+
+            <button
+              onClick={() => setShowModal(false)}
+              className="mt-4 w-full py-2 bg-[#FE7531] rounded-full font-bold hover:opacity-80"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

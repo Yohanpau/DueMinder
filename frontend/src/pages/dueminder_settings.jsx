@@ -76,7 +76,7 @@ function Settings() {
         {/* Back to bills */}
         <Link
           to="/home"
-          className="flex flex-row align-middle justify-center w-fit h-fit gap-1 hover:underline"
+          className="flex flex-row align-middle justify-center w-fit h-fit gap-1 active:underline"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

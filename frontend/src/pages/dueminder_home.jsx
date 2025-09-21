@@ -338,14 +338,14 @@ Answer based on the budget and bill data. Your response should only be a short s
       {showEditModal && (
         <div className="fixed inset-0 bg-[#010101] bg-opacity-70 flex justify-center items-center z-50">
           <div className="bg-[#111111] p-6 rounded-xl w-[90%] max-w-md text-white space-y-4">
-            <h2 className="text-xl font-bold mb-2">Edit Bill</h2>
+            <h2 className="text-2xl font-bold mb-2 text-[#FE7531]">Edit Bill</h2>
             {/* Bill name */}
             <input
               type="text"
               placeholder="Bill Name"
               value={newBill.name}
               onChange={(e) => setNewBill({ ...newBill, name: e.target.value })}
-              className="w-full p-2 pl-3 rounded bg-transparent border border-[#464646] outline-[#FFF6F2]"
+              className="w-full p-3 pl-4 rounded-xl bg-transparent border border-[#464646] outline-[#FE7531]"
             />
 
             {/* Bill amount */}
@@ -356,7 +356,7 @@ Answer based on the budget and bill data. Your response should only be a short s
               onChange={(e) =>
                 setNewBill({ ...newBill, amount: e.target.value })
               }
-              className="w-full p-2 pl-3 rounded bg-transparent border border-[#464646] outline-[#FFF6F2]"
+              className="w-full p-3 pl-4 rounded-xl bg-transparent border border-[#464646] outline-[#FE7531]"
             />
 
             {/* Bill due date */}
@@ -372,7 +372,7 @@ Answer based on the budget and bill data. Your response should only be a short s
                   }
                   placeholderText="MM/DD/YY"
                   dateFormat="MM/dd/yy"
-                  className="w-full p-2 pl-3 rounded bg-[#1a1a1a] border border-[#464646] text-white outline-[#FFF6F2]"
+                  className="w-full p-3 pl-4 rounded-xl bg-[#1a1a1a] border border-[#464646] text-white outline-[#FE7531]"
                 />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -391,7 +391,7 @@ Answer based on the budget and bill data. Your response should only be a short s
               </div>
 
               {/* Bill priority dropdown */}
-              <div className="relative w-[60%]">
+              <div className="relative w-[60%] h-full">
                 <select
                   value={newBill.priority}
                   onChange={(e) => {
@@ -399,7 +399,7 @@ Answer based on the budget and bill data. Your response should only be a short s
                     setOpen(false);
                   }}
                   onClick={() => setOpen(!open)}
-                  className="w-full px-4 h-[2.8em] bg-transparent text-[#FFF6F2] border-[#464646] border-[0.063em] rounded appearance-none outline-none"
+                  className="w-full px-4 h-[3.2em] bg-transparent text-[#FFF6F2] border-[#464646] border-[0.063em] rounded-xl appearance-none outline-[#FE7531]"
                 >
                   {options.map((option) => (
                     <option
@@ -454,7 +454,7 @@ Answer based on the budget and bill data. Your response should only be a short s
       {showDeleteModal && (
         <div className="fixed inset-0 bg-[#010101] bg-opacity-70 flex justify-center items-center z-50">
           <div className="w-[60%] max-w-md bg-[#111111] p-6 rounded-xl text-white border border-[#464646] relative">
-            <h2 className="text-[5.5vw] font-bold text-[#FE7531]">Delete Bill</h2>
+            <h2 className="text-2xl font-bold text-[#FE7531] mb-3">Delete Bill</h2>
             <p>Are you sure you want to delete <strong>{deleteBill?.name}</strong>?</p>
               <div className="flex flex-col justify-center gap-2 pt-4">
                 <button
@@ -477,7 +477,7 @@ Answer based on the budget and bill data. Your response should only be a short s
       {showPaidModal && (
         <div className="fixed inset-0 bg-[#010101] bg-opacity-70 flex justify-center items-center z-50">
           <div className="bg-[#111111] p-6 rounded-xl w-[90%] max-w-md text-white space-y-4">
-            <h2 className="text-[5.5vw] font-bold text-[#FE7531]">Payment Method</h2>
+            <h2 className="text-2xl font-bold text-[#FE7531]">Payment Method</h2>
 
             {/* Bill due date */}
             <div className="gap-2 w-full">
@@ -493,7 +493,7 @@ Answer based on the budget and bill data. Your response should only be a short s
                   }
                   placeholderText="MM/DD/YY"
                   dateFormat="MM/dd/yy"
-                  className="w-[142.42%] p-2 pl-3 rounded bg-[#1a1a1a] border border-[#464646] text-white outline-[#FFF6F2]"
+                  className="w-[142.42%] p-3 pl-3 rounded-xl bg-[#1a1a1a] border border-[#464646] text-white outline-[#FE7531]"
                 />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -517,7 +517,7 @@ Answer based on the budget and bill data. Your response should only be a short s
                 <select
                   value={newPaidBill.paidOptions}
                   onChange={(e) => setNewPaidBill({ ...newPaidBill, paidOptions: e.target.value })}
-                  className="appearance-none w-full px-4 py-2 bg-[#1a1a1a] border border-[#464646] text-white rounded"
+                  className="appearance-none w-full px-4 py-3 bg-[#1a1a1a] border border-[#464646] text-white rounded-xl outline-[#FE7531]"
                 >
                   <option value="" disabled>Choose Mode of Payment</option>
                   {paidOptions.map((method) => (
@@ -525,7 +525,7 @@ Answer based on the budget and bill data. Your response should only be a short s
                   ))}
                 </select>
 
-                <div className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2">
+                <div className="pointer-events-none absolute right-4 top-1/2 transform -translate-y-1/2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className={`h-4 transition-transform duration-200 ${open ? "rotate-180" : ""
