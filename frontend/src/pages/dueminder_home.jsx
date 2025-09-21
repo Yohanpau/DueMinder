@@ -11,6 +11,8 @@ import { FaCheckCircle } from "react-icons/fa";
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Listbox } from '@headlessui/react';
+import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid' // optional icons
 
 // Function for bill cards
 function BillCard({ bill, onEdit, onDelete, onPaid }) {
@@ -456,19 +458,19 @@ Answer based on the budget and bill data. Your response should only be a short s
           <div className="w-[60%] max-w-md bg-[#111111] p-6 rounded-xl text-white border border-[#464646] relative">
             <h2 className="text-2xl font-bold text-[#FE7531] mb-3">Delete Bill</h2>
             <p>Are you sure you want to delete <strong>{deleteBill?.name}</strong>?</p>
-              <div className="flex flex-col justify-center gap-2 pt-4">
-                <button
-                  onClick={confirmDelete}
-                  className="w-full py-2 font-bold bg-[#FE7531] active:opacity-80 rounded-full">
-                  Delete
-                </button>
-                <button
-                  onClick={cancelDelete}
-                  className="w-full py-2 bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full"
-                >
-                  Cancel
-                </button>
-              </div>
+            <div className="flex flex-col justify-center gap-2 pt-4">
+              <button
+                onClick={confirmDelete}
+                className="w-full py-2 font-bold bg-[#FE7531] active:opacity-80 rounded-full">
+                Delete
+              </button>
+              <button
+                onClick={cancelDelete}
+                className="w-full py-2 bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -652,7 +654,7 @@ Answer based on the budget and bill data. Your response should only be a short s
         {/* Title */}
         <h2 className="text-[1.5em] font-bold">My Bills</h2>
         {/* Search and dropdown */}
-        <div className="flex flex-row gap-[0.4em] w-[100%]">
+        <div className="flex flex-row items-center gap-[0.4em] w-[100%]">
           {/* Search bar */}
           <form action="#" className="relative w-[100%]">
             <input
@@ -662,7 +664,7 @@ Answer based on the budget and bill data. Your response should only be a short s
               id="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-[2.5em] w-[100%] p-[0.775em] rounded-[0.625em] bg-transparent border-[#464646] border-[0.063em] outline-[#FE7531]"
+              className="h-[2.8em] w-[100%] p-[0.775em] rounded-[0.625em] bg-transparent border-[#464646] border-[0.063em] outline-[#FE7531]"
             />
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -682,44 +684,54 @@ Answer based on the budget and bill data. Your response should only be a short s
           </form>
 
           {/* Dropdown */}
-          <div className="relative w-[50%]">
-            <div className="relative w-32">
-              <select
-                value={selected}
-                onChange={(e) => setSelected(e.target.value)}
-                className="flex w-32 items-center justify-between gap-2 px-4 h-[2.5em] bg-transparent text-[#FFF6F2] border-[#464646] border-[0.063em] rounded-[0.625em] appearance-none outline-[#FE7531]"
-              >
-                {options.map((option) => (
-                  // Dropdown options
-                  <option
-                    key={option}
-                    value={option}
-                    className="bg-[#464646] text-[#FFF6F2]"
-                  >
-                    {option}
-                  </option>
-                ))}
-              </select>
-
-              {/* Custom dropdown arrow */}
-              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className={`h-4 transition-transform duration-200 ${open ? "rotate-180" : ""
-                    }`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+          <div className="w-48">
+            <Listbox value={selected} onChange={setSelected}>
+              <div className="relative">
+                {/* Dropdown closed state */}
+                <Listbox.Button
+                  className="relative w-full cursor-default rounded-lg bg-transparent py-2 pl-3 pr-10 text-left text-[#FFF6F2] border border-[#464646] focus:outline-none focus:ring-2 focus:ring-[#FE7531]"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
+                  <span className="block truncate">{selected}</span>
+                  <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                    <ChevronUpDownIcon className="h-5 w-5 text-[#FFF6F2]" />
+                  </span>
+                </Listbox.Button>
+
+                {/* Dropdown open state */}
+                <Listbox.Options
+                  className="
+              absolute mt-1 max-h-60 w-full overflow-auto rounded-md
+              bg-[#1a1a1a] py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5
+              focus:outline-none z-50
+            "
+                >
+                  {options.map((option) => (
+                    <Listbox.Option
+                      key={option}
+                      value={option}
+                      className={({ active }) =>
+                        `relative cursor-default select-none py-2 pl-10 pr-4 ${active ? 'bg-[#FE7531] text-white' : 'text-[#FFF6F2]'
+                        }`
+                      }
+                    >
+                      {({ selected }) => (
+                        <>
+                          <span
+                            className={`block truncate ${selected ? 'font-medium' : 'font-normal'
+                              }`}
+                          >
+                            {option}
+                          </span>
+                          {selected && (
+                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-white"></span>
+                          )}
+                        </>
+                      )}
+                    </Listbox.Option>
+                  ))}
+                </Listbox.Options>
               </div>
-            </div>
+            </Listbox>
           </div>
         </div>
         {/* Bills list */}

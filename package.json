@@ -11,6 +11,8 @@
   ],
   "dependencies": {
     "@google/genai": "^1.10.0",
+    "@headlessui/react": "^2.2.8",
+    "@heroicons/react": "^2.2.0",
     "cors": "^2.8.5",
     "cosine-similarity": "^1.0.1",
     "dotenv": "^17.2.0",
