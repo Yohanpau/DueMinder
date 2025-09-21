@@ -42,13 +42,13 @@ function BillCard({ bill, onEdit, onDelete, onPaid }) {
           </button>
 
           {showMenu && (
-            <div className="absolute right-[0.2em] mt-[0.1em] w-[4.5em] bg-[#FE7531] rounded shadow-lg z-50">
+            <div className="absolute right-[0.2em] mt-[0.1em] w-[4.5em] bg-[#FE7531] rounded-lg shadow-lg z-50">
               <button
                 onClick={() => {
                   onEdit(bill);
                   setShowMenu(false);
                 }}
-                className="w-full px-3 py-1 text-left active:bg-gray-100 active:rounded active:text-[#FE7531] ease-in-out"
+                className="w-full px-3 py-1 text-left active:bg-gray-100 active:rounded-lg active:text-[#FE7531] ease-in-out"
               >
                 Edit
               </button>
@@ -57,7 +57,7 @@ function BillCard({ bill, onEdit, onDelete, onPaid }) {
                   onDelete(bill);
                   setShowMenu(false);
                 }}
-                className="w-full px-3 py-1 text-left text-[#FFF6F2] active:bg-gray-100 active:rounded active:text-[#FE7531]"
+                className="w-full px-3 py-1 text-left text-[#FFF6F2] active:bg-gray-100 active:rounded-lg active:text-[#FE7531]"
               >
                 Delete
               </button>
@@ -66,7 +66,7 @@ function BillCard({ bill, onEdit, onDelete, onPaid }) {
                   onPaid(bill.id);
                   setShowMenu(false);
                 }}
-                className="w-full px-3 py-1 text-left text-[#FFF6F2] active:bg-gray-100 active:rounded active:text-[#FE7531]"
+                className="w-full px-3 py-1 text-left text-[#FFF6F2] active:bg-gray-100 active:rounded-lg active:text-[#FE7531]"
               >
                 Paid
               </button>
@@ -476,12 +476,12 @@ Answer based on the budget and bill data. Your response should only be a short s
             <div className="flex flex-col justify-center gap-2 pt-4">
               <button
                 onClick={confirmDelete}
-                className="w-full py-2 font-bold bg-[#FE7531] active:opacity-80 rounded-full">
+                className="w-full py-2 font-bold bg-[#FE7531] active:opacity-80 rounded-full active:scale-95 ease-in-out">
                 Delete
               </button>
               <button
                 onClick={cancelDelete}
-                className="w-full py-2 bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full"
+                className="w-full py-2 bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full active:scale-95 ease-in-out"
               >
                 Cancel
               </button>
@@ -531,47 +531,77 @@ Answer based on the budget and bill data. Your response should only be a short s
               {/* Bill payment method dropdown */}
               <p className="mb-2">Payment Method</p>
               <div className="relative w-full">
-                <select
+                <Listbox
                   value={newPaidBill.paidOptions}
-                  onChange={(e) => setNewPaidBill({ ...newPaidBill, paidOptions: e.target.value })}
-                  className="appearance-none w-full px-4 py-3 bg-[#1a1a1a] border border-[#464646] text-white rounded-xl outline-[#FE7531]"
+                  onChange={(val) => setNewPaidBill({ ...newPaidBill, paidOptions: val })}
                 >
-                  <option value="" disabled>Choose Mode of Payment</option>
-                  {paidOptions.map((method) => (
-                    <option key={method} value={method}>{method}</option>
-                  ))}
-                </select>
+                  <div className="relative">
+                    {/* Closed state */}
+                    <Listbox.Button
+                      className="relative w-full cursor-default rounded-xl bg-[#1a1a1a] py-3 pl-4 pr-10 text-left 
+                   text-white border border-[#464646] focus:outline-none focus:ring-2 focus:ring-[#FE7531]"
+                    >
+                      <span className="block truncate">
+                        {newPaidBill.paidOptions || "Choose Mode of Payment"}
+                      </span>
+                      <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                        <ChevronUpDownIcon className="h-5 w-5 text-[#FFF6F2]" />
+                      </span>
+                    </Listbox.Button>
 
-                <div className="pointer-events-none absolute right-4 top-1/2 transform -translate-y-1/2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className={`h-4 transition-transform duration-200 ${open ? "rotate-180" : ""
-                      }`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </div>
+                    {/* Open state */}
+                    <Listbox.Options
+                      className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-[#1a1a1a] py-1
+                   text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+                    >
+                      {/* Disabled placeholder option */}
+                      <Listbox.Option
+                        value=""
+                        disabled
+                        className="relative cursor-not-allowed select-none py-2 pl-10 pr-4 text-gray-400 opacity-50"
+                      >
+                        Choose Mode of Payment
+                      </Listbox.Option>
+
+                      {paidOptions.map((method) => (
+                        <Listbox.Option
+                          key={method}
+                          value={method}
+                          className={({ active }) =>
+                            `relative cursor-default select-none py-2 pl-10 pr-4 ${active ? "bg-[#FE7531] text-white" : "text-[#FFF6F2]"
+                            }`
+                          }
+                        >
+                          {({ selected }) => (
+                            <>
+                              <span className={`block truncate ${selected ? "font-medium" : "font-normal"}`}>
+                                {method}
+                              </span>
+                              {selected && (
+                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-white">
+                                  <CheckIcon className="h-5 w-5" />
+                                </span>
+                              )}
+                            </>
+                          )}
+                        </Listbox.Option>
+                      ))}
+                    </Listbox.Options>
+                  </div>
+                </Listbox>
               </div>
             </div>
 
             <div className="flex justify-center gap-2 pt-2">
               <button
                 onClick={handlePaidSubmit}
-                className="w-[50%] py-2 font-bold bg-[#FE7531] active:opacity-80 rounded-full"
+                className="w-[50%] py-2 font-bold bg-[#FE7531] active:opacity-80 rounded-full active:scale-90 ease-in-out"
               >
                 Save
               </button>
               <button
                 onClick={closePaidModal}
-                className="w-[50%] py-2 bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full"
+                className="w-[50%] font-bold py-2 bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full active:scale-90 ease-in-out"
               >
                 Cancel
               </button>
@@ -792,12 +822,12 @@ Answer based on the budget and bill data. Your response should only be a short s
         {showModal && (
           <div className="fixed inset-0 bg-[#010101] bg-opacity-70 flex justify-center items-center z-50">
             <div className="bg-[#111111] p-6 rounded-xl w-[90%] max-w-md text-white space-y-4">
-              <h2 className="text-xl font-bold mb-2">Add New Bill</h2>
+              <h2 className="text-2xl font-bold mb-2 text-[#FE7531]">Add New Bill</h2>
               {/* Bill name input */}
               <input
                 type="text"
                 placeholder="Bill Name"
-                className="w-full p-2 pl-3 rounded bg-transparent border border-[#464646] outline-[#FFF6F2]"
+                className="w-full p-2 pl-3 rounded-xl bg-transparent border border-[#464646] outline-[#FFF6F2]"
                 value={newBill.name}
                 onChange={(e) =>
                   setNewBill({ ...newBill, name: e.target.value })
@@ -808,7 +838,7 @@ Answer based on the budget and bill data. Your response should only be a short s
               <input
                 type="number"
                 placeholder="Amount"
-                className="w-full p-2 pl-3 rounded bg-transparent border border-[#464646] outline-[#FFF6F2]"
+                className="w-full p-2 pl-3 rounded-xl bg-transparent border border-[#464646] outline-[#FFF6F2]"
                 value={newBill.amount}
                 onChange={(e) =>
                   setNewBill({ ...newBill, amount: e.target.value })
@@ -823,7 +853,7 @@ Answer based on the budget and bill data. Your response should only be a short s
                     onChange={(date) => setNewBill({ ...newBill, dueDate: date })}
                     dateFormat="MM/dd/yy"
                     placeholderText="MM/DD/YY"
-                    className="w-full p-2 pl-3 rounded bg-[#1a1a1a] border border-[#464646] text-white outline-[#FFF6F2]"
+                    className="w-full p-2 pl-3 rounded-xl bg-[#1a1a1a] border border-[#464646] text-white outline-[#FFF6F2]"
                   />
 
                   <svg
@@ -852,7 +882,7 @@ Answer based on the budget and bill data. Your response should only be a short s
                     <div className="relative">
                       {/* Dropdown closed state */}
                       <Listbox.Button
-                        className="relative w-full cursor-default rounded-lg bg-transparent py-2 pl-3 pr-10 text-left text-[#FFF6F2] border border-[#464646] focus:outline-none focus:ring-2 focus:ring-[#FE7531]"
+                        className="relative w-full cursor-default rounded-xl bg-transparent py-2 pl-3 pr-10 text-left text-[#FFF6F2] border border-[#464646] focus:outline-none focus:ring-2 focus:ring-[#FE7531]"
                       >
                         <span className="block truncate">{newBill.priority}</span>
                         <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
