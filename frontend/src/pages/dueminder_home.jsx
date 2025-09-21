@@ -13,6 +13,7 @@ import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Listbox } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid' // optional icons
+import { useNavigate } from "react-router-dom";
 
 // Function for bill cards
 function BillCard({ bill, onEdit, onDelete, onPaid }) {
@@ -63,7 +64,7 @@ function BillCard({ bill, onEdit, onDelete, onPaid }) {
               </button>
               <button
                 onClick={() => {
-                  onPaid(bill.id);
+                  onPaid(bill);      // ✅ use the prop
                   setShowMenu(false);
                 }}
                 className="w-full px-3 py-1 text-left text-[#FFF6F2] active:bg-gray-100 active:rounded-lg active:text-[#FE7531]"
@@ -246,32 +247,52 @@ Answer based on the budget and bill data. Your response should only be a short s
   };
 
   //Paid Bill Modal
-  const [payingBill, setPayingBill] = useState(null);
   const [showPaidModal, setShowPaidModal] = useState(false);
   const [showPaidConfirmation, setShowPaidConfirmation] = useState(false);
+  const [selectedBill, setSelectedBill] = useState(null);
 
-  const handlePaid = (id) => {
-    setPayingBill(id);
+  const [newPaidBill, setNewPaidBill] = useState({
+    dueDate: "",
+    paidOptions: "",
+  });
+
+  const [paidBills, setPaidBills] = useState([]);
+  const navigate = useNavigate();
+
+  const openPaidModal = (bill) => {
+    setSelectedBill(bill);
+    setNewPaidBill({ dueDate: "", paidOptions: "" });
     setShowPaidModal(true);
-  }
-
-  const handlePaidSubmit = (id) => {
-    setShowPaidConfirmation(true);
-  }
-
-  const closePaidModal = () => {
-    setPayingBill(null);
-    setShowPaidModal(false);
-    setShowPaidConfirmation(false);
-  }
-
-  //Paid bill new state
-  const defaultPaidBill = {
-    name: "",
-    paymentMethod: "",
-    paidDate: new Date(),
   };
-  const [newPaidBill, setNewPaidBill] = useState(defaultPaidBill);
+
+  const closePaidModal = () => setShowPaidModal(false);
+
+  // inside Home component
+const handlePaid = () => {
+  if (!newPaidBill.dueDate || !newPaidBill.paidOptions || !selectedBill) return;
+
+  const paidBill = {
+    ...selectedBill,
+    paidDate: newPaidBill.dueDate,
+    paidOptions: newPaidBill.paidOptions,
+    status: "Paid",
+  };
+
+  // Save to history
+  const existingHistory = JSON.parse(localStorage.getItem("history")) || [];
+  localStorage.setItem("history", JSON.stringify([...existingHistory, paidBill]));
+
+  // Remove from active bills and update localStorage
+  setBills(prev => {
+    const updated = prev.filter(b => b.id !== selectedBill.id);
+    localStorage.setItem("bills", JSON.stringify(updated));
+    return updated;
+  });
+
+  setShowPaidModal(false);
+  setShowPaidConfirmation(false);
+  navigate("/history");
+};
 
   // Adding bill modal
   const defaultNewBill = {
@@ -317,6 +338,11 @@ Answer based on the budget and bill data. Your response should only be a short s
       bill.amount.toString().includes(searchQuery);
     return matchesPriority && matchesSearch;
   });
+
+  const [history, setHistory] = useState(
+    JSON.parse(localStorage.getItem("history")) || []
+  );
+
 
   return (
     <>
@@ -594,7 +620,11 @@ Answer based on the budget and bill data. Your response should only be a short s
 
             <div className="flex justify-center gap-2 pt-2">
               <button
-                onClick={handlePaidSubmit}
+                onClick={() => {
+                  if (!newPaidBill.dueDate || !newPaidBill.paidOptions) return;
+                  setShowPaidModal(false);
+                  setShowPaidConfirmation(true);
+                }}
                 className="w-[50%] py-2 font-bold bg-[#FE7531] active:opacity-80 rounded-full active:scale-90 ease-in-out"
               >
                 Save
@@ -616,7 +646,7 @@ Answer based on the budget and bill data. Your response should only be a short s
           <div className="w-[60%] max-w-md bg-[#111111] p-6 rounded-xl text-white border border-[#464646] relative">
 
             <button
-              onClick={closePaidModal}
+              onClick={handlePaid}
               className="absolute top-3 right-3 text-[7.5vw] text-[#FE7531]"
             >
               <HiX />
@@ -788,7 +818,10 @@ Answer based on the budget and bill data. Your response should only be a short s
               bill={bill}
               onEdit={handleEdit}
               onDelete={handleDelete}
-              onPaid={handlePaid}
+              onPaid={(b) => {
+                setSelectedBill(b);
+                setShowPaidModal(true);
+              }}
             />
           ))}
         </div>
