@@ -394,43 +394,58 @@ Answer based on the budget and bill data. Your response should only be a short s
 
               {/* Bill priority dropdown */}
               <div className="relative w-[60%] h-full">
-                <select
+                <Listbox
                   value={newBill.priority}
-                  onChange={(e) => {
-                    setNewBill({ ...newBill, priority: e.target.value });
-                    setOpen(false);
-                  }}
+                  onChange={(val) => setNewBill({ ...newBill, priority: val })}
                   onClick={() => setOpen(!open)}
-                  className="w-full px-4 h-[3.2em] bg-transparent text-[#FFF6F2] border-[#464646] border-[0.063em] rounded-xl appearance-none outline-[#FE7531]"
                 >
-                  {options.map((option) => (
-                    <option
-                      key={option}
-                      value={option}
-                      className="bg-[#464646] text-[#FFF6F2]"
+                  <div className="relative">
+                    {/* Dropdown closed state */}
+                    <Listbox.Button
+                      className="relative w-full cursor-default rounded-xl bg-transparent py-3 pl-3 pr-10 text-left text-[#FFF6F2] border border-[#464646] focus:outline-none focus:ring-2 focus:ring-[#FE7531]"
                     >
-                      {option}
-                    </option>
-                  ))}
-                </select>
+                      <span className="block truncate">{newBill.priority}</span>
+                      <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                        <ChevronUpDownIcon className="h-5 w-5 text-[#FFF6F2]" />
+                      </span>
+                    </Listbox.Button>
 
-                <div className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className={`h-4 transition-transform duration-200 ${open ? "rotate-180" : ""
-                      }`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </div>
+                    {/* Dropdown open state */}
+                    <Listbox.Options
+                      className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-[#1a1a1a] py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+                    >
+                      {options.map((option) => (
+                        <Listbox.Option
+                          key={option}
+                          value={option}
+                          disabled={option === "All"}
+                          className={({ active, disabled }) =>
+                            `relative cursor-default select-none py-2 pl-10 pr-4 ${disabled
+                              ? "opacity-40 cursor-not-allowed" // style for disabled
+                              : active
+                                ? "bg-[#FE7531] text-white"
+                                : "text-[#FFF6F2]"
+                            }`
+                          }
+                        >
+                          {({ selected }) => (
+                            <>
+                              <span
+                                className={`block truncate ${selected ? 'font-medium' : 'font-normal'
+                                  }`}
+                              >
+                                {option}
+                              </span>
+                              {selected && (
+                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-white"></span>
+                              )}
+                            </>
+                          )}
+                        </Listbox.Option>
+                      ))}
+                    </Listbox.Options>
+                  </div>
+                </Listbox>
               </div>
             </div>
 
@@ -839,7 +854,7 @@ Answer based on the budget and bill data. Your response should only be a short s
                       <Listbox.Button
                         className="relative w-full cursor-default rounded-lg bg-transparent py-2 pl-3 pr-10 text-left text-[#FFF6F2] border border-[#464646] focus:outline-none focus:ring-2 focus:ring-[#FE7531]"
                       >
-                        <span className="block truncate">{selected}</span>
+                        <span className="block truncate">{newBill.priority}</span>
                         <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                           <ChevronUpDownIcon className="h-5 w-5 text-[#FFF6F2]" />
                         </span>
@@ -853,8 +868,13 @@ Answer based on the budget and bill data. Your response should only be a short s
                           <Listbox.Option
                             key={option}
                             value={option}
-                            className={({ active }) =>
-                              `relative cursor-default select-none py-2 pl-10 pr-4 ${active ? 'bg-[#FE7531] text-white' : 'text-[#FFF6F2]'
+                            disabled={option === "All"}
+                            className={({ active, disabled }) =>
+                              `relative cursor-default select-none py-2 pl-10 pr-4 ${disabled
+                                ? "opacity-40 cursor-not-allowed" // style for disabled
+                                : active
+                                  ? "bg-[#FE7531] text-white"
+                                  : "text-[#FFF6F2]"
                               }`
                             }
                           >
