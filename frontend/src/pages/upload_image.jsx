@@ -26,7 +26,7 @@ export default function ProfileUploader() {
   return (
     <div className="flex flex-col items-center space-y-3">
       {/* Profile Image Circle */}
-      <div className="w-[7.5em] h-[7.5em] rounded-full bg-[#222222] border border-[#FE7531] flex items-center justify-center overflow-hidden">
+      <div className="w-[7.5em] h-[7.5em] rounded-full bg-[#222222] border border-[#e7deda] flex items-center justify-center overflow-hidden">
         {image ? (
           <img
             src={image}
@@ -72,7 +72,7 @@ export default function ProfileUploader() {
         {image && (
           <button
             onClick={() => setImage(null)}
-            className="px-4 py-2 text-sm border border-[#FE7531] text-[#FE7531] rounded-full active:scale-90 transition"
+            className="px-4 py-2 text-sm border border-[#e7deda] text-[#e7deda] rounded-full active:scale-90 transition"
           >
             Remove Photo
           </button>

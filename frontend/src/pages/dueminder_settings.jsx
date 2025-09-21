@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import DueMinderAIUI from "./dueminder.conversation";
 import emailjs from "emailjs-com";
 import EmailReminderHandler from "./EmailReminderHandler";
+import { Link } from "react-router-dom";
 
 function Settings() {
   // AI
@@ -73,9 +74,9 @@ function Settings() {
       {/* Upper icons */}
       <div className="flex flex-row justify-between align-middle w-[100%] mt-[2em] mb-[1em] text-white">
         {/* Back to bills */}
-        <a
-          href="/home"
-          className="flex flex-row align-middle justify-center w-fit h-fit gap-1"
+        <Link
+          to="/home"
+          className="flex flex-row align-middle justify-center w-fit h-fit gap-1 active:underline"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -91,8 +92,8 @@ function Settings() {
               d="M15 19l-7-7 7-7"
             />
           </svg>
-          <p className="mt-[-0.2em]">Back to my bills</p>
-        </a>
+          <p className="mt-[-0.2em]">Back to My Bills</p>
+        </Link>
 
         {/* AI icon */}
         <button onClick={() => setChatbotOpen(!chatbotOpen)}>
@@ -128,14 +129,13 @@ function Settings() {
 
           {/* Settings list */}
           <div className="flex flex-col gap-2">
-            {/* First settings */}
-            <div className="flex flex-row justify-between align-middle w-[100%] bg-[#111111] border-[#464646] border-[0.063em] rounded-[1.25em] p-[1.1em]">
+            {/* Edit Profile */}
+            <Link to="/profile" className="flex flex-row justify-between align-middle w-[100%] bg-[#111111] border-[#464646] border-[0.063em] rounded-[1.25em] p-[1.1em] active:border-[#FE7531] active:scale-95 ease-in-out duration-100">
               <div className="flex flex-col">
                 <h3 className="text-[1.25rem] font-bold">Profile</h3>
                 <p className="text-[0.75rem]">Edit personal information</p>
               </div>
-              <a
-                href="/profile"
+              <div
                 className="flex items-center justify-center px-4 py-2 text-[#e7deda] rounded-full active:scale-90"
               >
                 <svg
@@ -152,9 +152,34 @@ function Settings() {
                     d="M9 5l7 7-7 7"
                   />
                 </svg>
-              </a>
-            </div>
-            {/* Second settings */}
+              </div>
+            </Link>
+            {/* History page */}
+            <Link to="/history" className="flex flex-row justify-between align-middle w-[100%] bg-[#111111] border-[#464646] border-[0.063em] active:border-[#FE7531] rounded-[1.25em] p-[1.1em] active:scale-95 ease-in-out duration-100">
+              <div className="flex flex-col">
+                <h3 className="text-[1.25rem] font-bold">History</h3>
+                <p className="text-[0.75rem]">See all your paid bills here</p>
+              </div>
+              <div
+                className="flex items-center justify-center px-4 py-2 text-[#e7deda] rounded-full active:scale-90"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </div>
+            </Link>
+            {/* Notifications */}
             <div className="flex flex-row justify-between items-center w-full bg-[#111111] border-[#464646] border-[0.063em] rounded-[1.25em] p-[1.1em]">
               <div className="flex flex-col">
                 <h3 className="text-[1.25rem] font-bold text-white">
@@ -181,12 +206,12 @@ function Settings() {
             </div>
           </div>
         </div>
-        <a
-          href="/"
-          className="flex align-middle justify-center font-bold underline text-[1.25rem]"
+        <Link
+          to="/"
+          className="flex align-middle justify-center font-bold underline text-[1.25rem] active:scale-95 duration-100"
         >
           Sign Out
-        </a>
+        </Link>
       </div>
     </>
   );

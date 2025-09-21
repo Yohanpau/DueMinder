@@ -6,7 +6,13 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Suggestion from './suggestion_message';
 import shuffle from "lodash.shuffle";
-import api from "./api"; // Axios instance
+import { HiX } from "react-icons/hi";
+import { FaCheckCircle } from "react-icons/fa";
+import { CSSTransition, TransitionGroup } from 'react-transition-group';
+import { useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Listbox } from '@headlessui/react';
+import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid' // optional icons
 
 // Function for bill cards
 function BillCard({ bill, onEdit, onDelete }) {
@@ -19,7 +25,7 @@ function BillCard({ bill, onEdit, onDelete }) {
         <div className="relative inline-block text-left">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="p-1 rounded-full active:bg-[#464646]"
+            className="p-1 rounded-full active:bg-[#464646] ease-in-out duration-300"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -34,24 +40,33 @@ function BillCard({ bill, onEdit, onDelete }) {
           </button>
 
           {showMenu && (
-            <div className="absolute right-[0.2em] mt-[0.1em] w-[4.5em] bg-[#FE7531] rounded shadow-lg z-50">
+            <div className="absolute right-[0.2em] mt-[0.1em] w-[4.5em] bg-[#FE7531] rounded-lg shadow-lg z-50">
               <button
                 onClick={() => {
                   onEdit(bill);
                   setShowMenu(false);
                 }}
-                className="w-full px-3 py-1 text-left active:bg-gray-100 active:rounded active:text-[#FE7531]"
+                className="w-full px-3 py-1 text-left active:bg-gray-100 active:rounded-lg active:text-[#FE7531] ease-in-out"
               >
                 Edit
               </button>
               <button
                 onClick={() => {
-                  onDelete(bill.id);
+                  onDelete(bill);
                   setShowMenu(false);
                 }}
-                className="w-full px-3 py-1 text-left text-[#FFF6F2] active:bg-gray-100 active:rounded active:text-[#FE7531]"
+                className="w-full px-3 py-1 text-left text-[#FFF6F2] active:bg-gray-100 active:rounded-lg active:text-[#FE7531]"
               >
                 Delete
+              </button>
+              <button
+                onClick={() => {
+                  onPaid(bill.id);
+                  setShowMenu(false);
+                }}
+                className="w-full px-3 py-1 text-left text-[#FFF6F2] active:bg-gray-100 active:rounded-lg active:text-[#FE7531]"
+              >
+                Paid
               </button>
             </div>
           )}
@@ -233,22 +248,16 @@ Answer based on the budget and bill data. Your response should only be a short s
     fetchBills();
   }, []);
 
-  // ------------------ BILL MODAL HANDLERS ------------------
-  const openAddModal = () => {
-    setNewBill(defaultNewBill);
-    setShowModal(true);
-  };
+  //Editing
+  const [editingBill, setEditingBill] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
-  const handleAddBill = async () => {
-    try {
-      const response = await api.post("/bills", newBill);
-      setBills([...bills, response.data]);
-      setShowModal(false);
-      setNewBill(defaultNewBill);
-    } catch (err) {
-      console.error("Error adding bill", err);
-    }
-  };
+  const [editBill, setEditBill] = useState({
+    name: "",
+    amount: "",
+    dueDate: today,
+    priority: "All",
+  });
 
   const handleEdit = (bill) => {
     setEditingBill(bill);
@@ -287,24 +296,102 @@ Answer based on the budget and bill data. Your response should only be a short s
   }
 };
 
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm("Delete this bill?");
-    if (!confirmDelete) return;
+  //Deleting
+  const [deleteBill, setDeleteBill] = useState(null);
+  const [showDeleteModal, setDeleteModal] = useState(false);
 
-    try {
-      await api.delete(`/bills/${id}`);
-      setBills(bills.filter((bill) => bill.id !== id));
-    } catch (err) {
-      console.error("Error deleting bill", err);
+  const handleDelete = (bill) => {
+    setDeleteBill(bill);
+    setDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    if (deleteBill) {
+      const updatedBills = bills.filter((b) => b.id !== deleteBill.id);
+      setBills(updatedBills)
+      localStorage.setItem("bills", JSON.stringify(updatedBills));
+      setDeleteBill(null);
+      setDeleteModal(false);
     }
   };
 
-  const closeModal = () => {
-    setShowEditModal(false);
-    setEditingBill(null);
-    setNewBill(defaultNewBill);
+  const cancelDelete = () => {
+    setDeleteBill(null);
+    setDeleteModal(false);
   };
 
+  //Paid Bill Modal
+  const [payingBill, setPayingBill] = useState(null);
+  const [showPaidModal, setShowPaidModal] = useState(false);
+  const [showPaidConfirmation, setShowPaidConfirmation] = useState(false);
+
+  const handlePaid = (id) => {
+    setPayingBill(id);
+    setShowPaidModal(true);
+  }
+
+  const handlePaidSubmit = (id) => {
+    setShowPaidConfirmation(true);
+  }
+
+  const closePaidModal = () => {
+    setPayingBill(null);
+    setShowPaidModal(false);
+    setShowPaidConfirmation(false);
+  }
+
+  //Paid bill new state
+  const defaultPaidBill = {
+    name: "",
+    paymentMethod: "",
+    paidDate: new Date(),
+  };
+  const [newPaidBill, setNewPaidBill] = useState(defaultPaidBill);
+
+  // Adding bill modal
+  const defaultNewBill = {
+    name: "",
+    amount: "",
+    dueDate: new Date(), // react-datepicker uses Date objects
+    priority: "Medium",
+  };
+  const [newBill, setNewBill] = useState(defaultNewBill);
+  const [showModal, setShowModal] = useState(false);
+
+  const openAddModal = () => {
+    setNewBill(defaultNewBill); // Reset form
+    setShowModal(true);
+  };
+
+  useEffect(() => {
+    const storedBudget = localStorage.getItem("userBudget");
+    if (storedBudget) {
+      setBudget(JSON.parse(storedBudget));
+    }
+  }, []);
+
+  // Compute the total amount of bills
+  const totalAmount = bills.reduce((sum, bill) => sum + Number(bill.amount), 0);
+
+  // Compare the total amount of bills and the budget
+  const remaining = budget - totalAmount;
+
+  // For priority filter
+  const [selectedPriority, setSelectedPriority] = useState("All");
+
+  const [selected, setSelected] = useState("All"); // Dropdown selection
+
+  // Search bar
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filters bills base on priority
+  const filteredBills = bills.filter((bill) => {
+    const matchesPriority = selected === "All" || bill.priority === selected;
+    const matchesSearch =
+      bill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      bill.amount.toString().includes(searchQuery);
+    return matchesPriority && matchesSearch;
+  });
 
   return (
     <>
@@ -325,14 +412,14 @@ Answer based on the budget and bill data. Your response should only be a short s
       {showEditModal && (
         <div className="fixed inset-0 bg-[#010101] bg-opacity-70 flex justify-center items-center z-50">
           <div className="bg-[#111111] p-6 rounded-xl w-[90%] max-w-md text-white space-y-4">
-            <h2 className="text-xl font-bold mb-2">Edit Bill</h2>
+            <h2 className="text-2xl font-bold mb-2 text-[#FE7531]">Edit Bill</h2>
             {/* Bill name */}
             <input
               type="text"
               placeholder="Bill Name"
               value={newBill.name}
               onChange={(e) => setNewBill({ ...newBill, name: e.target.value })}
-              className="w-full p-2 pl-3 rounded bg-transparent border border-[#464646] outline-[#FFF6F2]"
+              className="w-full p-3 pl-4 rounded-xl bg-transparent border border-[#464646] outline-[#FE7531]"
             />
 
             {/* Bill amount */}
@@ -343,7 +430,7 @@ Answer based on the budget and bill data. Your response should only be a short s
               onChange={(e) =>
                 setNewBill({ ...newBill, amount: e.target.value })
               }
-              className="w-full p-2 pl-3 rounded bg-transparent border border-[#464646] outline-[#FFF6F2]"
+              className="w-full p-3 pl-4 rounded-xl bg-transparent border border-[#464646] outline-[#FE7531]"
             />
 
             {/* Bill due date */}
@@ -360,7 +447,7 @@ Answer based on the budget and bill data. Your response should only be a short s
                   }
                   placeholderText="MM/DD/YY"
                   dateFormat="MM/dd/yy"
-                  className="w-full p-2 pl-3 rounded bg-[#1a1a1a] border border-[#464646] text-white outline-[#FFF6F2]"
+                  className="w-full p-3 pl-4 rounded-xl bg-[#1a1a1a] border border-[#464646] text-white outline-[#FE7531]"
                 />
 
                 <svg
@@ -381,58 +468,72 @@ Answer based on the budget and bill data. Your response should only be a short s
               </div>
 
               {/* Bill priority dropdown */}
-              <div className="relative w-[60%]">
-                <select
+              <div className="relative w-[60%] h-full">
+                <Listbox
                   value={newBill.priority}
-                  onChange={(e) => {
-                    setNewBill({ ...newBill, priority: e.target.value });
-                    setOpen(false);
-                  }}
+                  onChange={(val) => setNewBill({ ...newBill, priority: val })}
                   onClick={() => setOpen(!open)}
-                  className="w-full px-4 h-[2.8em] bg-transparent text-[#FFF6F2] border-[#464646] border-[0.063em] rounded appearance-none outline-none"
                 >
-                  {options.map((option) => (
-                    <option
-                      key={option}
-                      value={option}
-                      className="bg-[#464646] text-[#FFF6F2]"
+                  <div className="relative">
+                    {/* Dropdown closed state */}
+                    <Listbox.Button
+                      className="relative w-full cursor-default rounded-xl bg-transparent py-3 pl-3 pr-10 text-left text-[#FFF6F2] border border-[#464646] focus:outline-none focus:ring-2 focus:ring-[#FE7531]"
                     >
-                      {option}
-                    </option>
-                  ))}
-                </select>
+                      <span className="block truncate">{newBill.priority}</span>
+                      <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                        <ChevronUpDownIcon className="h-5 w-5 text-[#FFF6F2]" />
+                      </span>
+                    </Listbox.Button>
 
-                <div className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className={`h-4 transition-transform duration-200 ${
-                      open ? "rotate-180" : ""
-                    }`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </div>
+                    {/* Dropdown open state */}
+                    <Listbox.Options
+                      className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-[#1a1a1a] py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+                    >
+                      {options.map((option) => (
+                        <Listbox.Option
+                          key={option}
+                          value={option}
+                          disabled={option === "All"}
+                          className={({ active, disabled }) =>
+                            `relative cursor-default select-none py-2 pl-10 pr-4 ${disabled
+                              ? "opacity-40 cursor-not-allowed" // style for disabled
+                              : active
+                                ? "bg-[#FE7531] text-white"
+                                : "text-[#FFF6F2]"
+                            }`
+                          }
+                        >
+                          {({ selected }) => (
+                            <>
+                              <span
+                                className={`block truncate ${selected ? 'font-medium' : 'font-normal'
+                                  }`}
+                              >
+                                {option}
+                              </span>
+                              {selected && (
+                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-white"></span>
+                              )}
+                            </>
+                          )}
+                        </Listbox.Option>
+                      ))}
+                    </Listbox.Options>
+                  </div>
+                </Listbox>
               </div>
             </div>
 
             <div className="flex justify-center gap-2 pt-2">
               <button
                 onClick={handleSubmit}
-                className="w-[50%] py-2 font-bold bg-[#FE7531] active:opacity-80 rounded-full"
+                className="w-[50%] py-2 font-bold bg-[#FE7531] active:opacity-80 rounded-full active:scale-90 ease-in-out"
               >
                 Update
               </button>
               <button
                 onClick={closeModal}
-                className="w-[50%] py-2 bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full"
+                className="w-[50%] py-2 font-bold bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full active:scale-90 ease-in-out"
               >
                 Cancel
               </button>
@@ -440,6 +541,178 @@ Answer based on the budget and bill data. Your response should only be a short s
           </div>
         </div>
       )}
+
+      {/* Deleting Bill Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-[#010101] bg-opacity-70 flex justify-center items-center z-50">
+          <div className="w-[60%] max-w-md bg-[#111111] p-6 rounded-xl text-white border border-[#464646] relative">
+            <h2 className="text-2xl font-bold text-[#FE7531] mb-3">Delete Bill</h2>
+            <p>Are you sure you want to delete <strong>{deleteBill?.name}</strong>?</p>
+            <div className="flex flex-col justify-center gap-2 pt-4">
+              <button
+                onClick={confirmDelete}
+                className="w-full py-2 font-bold bg-[#FE7531] active:opacity-80 rounded-full active:scale-95 ease-in-out">
+                Delete
+              </button>
+              <button
+                onClick={cancelDelete}
+                className="w-full py-2 bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full active:scale-95 ease-in-out"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Method Modal */}
+      {showPaidModal && (
+        <div className="fixed inset-0 bg-[#010101] bg-opacity-70 flex justify-center items-center z-50">
+          <div className="bg-[#111111] p-6 rounded-xl w-[90%] max-w-md text-white space-y-4">
+            <h2 className="text-2xl font-bold text-[#FE7531]">Payment Method</h2>
+
+            {/* Bill due date */}
+            <div className="gap-2 w-full">
+              <div className="relative w-full mb-5">
+                <p className="mb-2">Date of Payment</p>
+                <DatePicker
+                  selected={newPaidBill.dueDate ? new Date(newPaidBill.dueDate) : null}
+                  onChange={(date) =>
+                    setNewPaidBill({
+                      ...newPaidBill,
+                      dueDate: date.toISOString().split("T")[0], // same format as before (YYYY-MM-DD)
+                    })
+                  }
+                  placeholderText="MM/DD/YY"
+                  dateFormat="MM/dd/yy"
+                  className="w-[164%] p-3 pl-3 rounded-xl bg-[#1a1a1a] border border-[#464646] text-white outline-[#FE7531]"
+                />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="w-7 h-8 text-white opacity-60 absolute right-4 top-[2.5em]"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M8.25 6V4.5m7.5 1.5V4.5M3.75 9h16.5M4.5 5.25h15A1.5 1.5 0 0121 6.75v12a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 18.75v-12A1.5 1.5 0 014.5 5.25z"
+                  />
+                </svg>
+              </div>
+
+              {/* Bill payment method dropdown */}
+              <p className="mb-2">Payment Method</p>
+              <div className="relative w-full">
+                <Listbox
+                  value={newPaidBill.paidOptions}
+                  onChange={(val) => setNewPaidBill({ ...newPaidBill, paidOptions: val })}
+                >
+                  <div className="relative">
+                    {/* Closed state */}
+                    <Listbox.Button
+                      className="relative w-full cursor-default rounded-xl bg-[#1a1a1a] py-3 pl-4 pr-10 text-left 
+                   text-white border border-[#464646] focus:outline-none focus:ring-2 focus:ring-[#FE7531]"
+                    >
+                      <span className="block truncate">
+                        {newPaidBill.paidOptions || "Choose Mode of Payment"}
+                      </span>
+                      <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                        <ChevronUpDownIcon className="h-5 w-5 text-[#FFF6F2]" />
+                      </span>
+                    </Listbox.Button>
+
+                    {/* Open state */}
+                    <Listbox.Options
+                      className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-[#1a1a1a] py-1
+                   text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+                    >
+                      {/* Disabled placeholder option */}
+                      <Listbox.Option
+                        value=""
+                        disabled
+                        className="relative cursor-not-allowed select-none py-2 pl-10 pr-4 text-gray-400 opacity-50"
+                      >
+                        Choose Mode of Payment
+                      </Listbox.Option>
+
+                      {paidOptions.map((method) => (
+                        <Listbox.Option
+                          key={method}
+                          value={method}
+                          className={({ active }) =>
+                            `relative cursor-default select-none py-2 pl-10 pr-4 ${active ? "bg-[#FE7531] text-white" : "text-[#FFF6F2]"
+                            }`
+                          }
+                        >
+                          {({ selected }) => (
+                            <>
+                              <span className={`block truncate ${selected ? "font-medium" : "font-normal"}`}>
+                                {method}
+                              </span>
+                              {selected && (
+                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-white">
+                                  <CheckIcon className="h-5 w-5" />
+                                </span>
+                              )}
+                            </>
+                          )}
+                        </Listbox.Option>
+                      ))}
+                    </Listbox.Options>
+                  </div>
+                </Listbox>
+              </div>
+            </div>
+
+            <div className="flex justify-center gap-2 pt-2">
+              <button
+                onClick={handlePaidSubmit}
+                className="w-[50%] py-2 font-bold bg-[#FE7531] active:opacity-80 rounded-full active:scale-90 ease-in-out"
+              >
+                Save
+              </button>
+              <button
+                onClick={closePaidModal}
+                className="w-[50%] font-bold py-2 bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full active:scale-90 ease-in-out"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PAID CONFIRMATION MODAL */}
+      {showPaidConfirmation && (
+        <div className="fixed inset-0 bg-[#010101] bg-opacity-70 flex justify-center items-center z-50">
+          <div className="w-[60%] max-w-md bg-[#111111] p-6 rounded-xl text-white border border-[#464646] relative">
+
+            <button
+              onClick={closePaidModal}
+              className="absolute top-3 right-3 text-[7.5vw] text-[#FE7531]"
+            >
+              <HiX />
+            </button>
+
+            {/* Title */}
+            <h1 className="text-[#FE7531] font-bold text-[6vw] text-center my-4">
+              Saved to bills history!
+            </h1>
+
+            {/* Icon centered */}
+            <div className="flex justify-center">
+              <div className="bg-[#FE7531] rounded-full inline-flex items-center justify-center">
+                <FaCheckCircle className="text-white w-[20vw] h-[20vw]" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       {/* Upper icons */}
       <div className="flex flex-row justify-between w-[100%] mt-[2em] mb-[1em]">
         {/* AI icon */}
@@ -501,7 +774,7 @@ Answer based on the budget and bill data. Your response should only be a short s
         {/* Title */}
         <h2 className="text-[1.5em] font-bold">My Bills</h2>
         {/* Search and dropdown */}
-        <div className="flex flex-row gap-[0.4em] w-[100%]">
+        <div className="flex flex-row items-center gap-[0.4em] w-[100%]">
           {/* Search bar */}
           <form action="#" className="relative w-[100%]">
             <input
@@ -511,7 +784,7 @@ Answer based on the budget and bill data. Your response should only be a short s
               id="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-[2.5em] w-[100%] p-[0.775em] rounded-[0.625em] bg-transparent border-[#464646] border-[0.063em] outline-[#FFF6F2]"
+              className="h-[2.8em] w-[100%] p-[0.775em] rounded-[0.625em] bg-transparent border-[#464646] border-[0.063em] outline-[#FE7531]"
             />
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -531,45 +804,54 @@ Answer based on the budget and bill data. Your response should only be a short s
           </form>
 
           {/* Dropdown */}
-          <div className="relative w-[50%]">
-            <div className="relative w-32">
-              <select
-                value={selected}
-                onChange={(e) => setSelected(e.target.value)}
-                className="flex w-32 items-center justify-between gap-2 px-4 h-[2.5em] bg-transparent text-[#FFF6F2] border-[#464646] border-[0.063em] rounded-[0.625em] appearance-none outline-none"
-              >
-                {options.map((option) => (
-                  // Dropdown options
-                  <option
-                    key={option}
-                    value={option}
-                    className="bg-[#464646] text-[#FFF6F2]"
-                  >
-                    {option}
-                  </option>
-                ))}
-              </select>
-
-              {/* Custom dropdown arrow */}
-              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className={`h-4 transition-transform duration-200 ${
-                    open ? "rotate-180" : ""
-                  }`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+          <div className="w-48">
+            <Listbox value={selected} onChange={setSelected}>
+              <div className="relative">
+                {/* Dropdown closed state */}
+                <Listbox.Button
+                  className="relative w-full cursor-default rounded-lg bg-transparent py-2 pl-3 pr-10 text-left text-[#FFF6F2] border border-[#464646] focus:outline-none focus:ring-2 focus:ring-[#FE7531]"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
+                  <span className="block truncate">{selected}</span>
+                  <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                    <ChevronUpDownIcon className="h-5 w-5 text-[#FFF6F2]" />
+                  </span>
+                </Listbox.Button>
+
+                {/* Dropdown open state */}
+                <Listbox.Options
+                  className="
+              absolute mt-1 max-h-60 w-full overflow-auto rounded-md
+              bg-[#1a1a1a] py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5
+              focus:outline-none z-50
+            "
+                >
+                  {options.map((option) => (
+                    <Listbox.Option
+                      key={option}
+                      value={option}
+                      className={({ active }) =>
+                        `relative cursor-default select-none py-2 pl-10 pr-4 ${active ? 'bg-[#FE7531] text-white' : 'text-[#FFF6F2]'
+                        }`
+                      }
+                    >
+                      {({ selected }) => (
+                        <>
+                          <span
+                            className={`block truncate ${selected ? 'font-medium' : 'font-normal'
+                              }`}
+                          >
+                            {option}
+                          </span>
+                          {selected && (
+                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-white"></span>
+                          )}
+                        </>
+                      )}
+                    </Listbox.Option>
+                  ))}
+                </Listbox.Options>
               </div>
-            </div>
+            </Listbox>
           </div>
         </div>
         {/* Bills list */}
@@ -614,12 +896,12 @@ Answer based on the budget and bill data. Your response should only be a short s
         {showModal && (
           <div className="fixed inset-0 bg-[#010101] bg-opacity-70 flex justify-center items-center z-50">
             <div className="bg-[#111111] p-6 rounded-xl w-[90%] max-w-md text-white space-y-4">
-              <h2 className="text-xl font-bold mb-2">Add New Bill</h2>
+              <h2 className="text-2xl font-bold mb-2 text-[#FE7531]">Add New Bill</h2>
               {/* Bill name input */}
               <input
                 type="text"
                 placeholder="Bill Name"
-                className="w-full p-2 pl-3 rounded bg-transparent border border-[#464646] outline-[#FFF6F2]"
+                className="w-full p-2 pl-3 rounded-xl bg-transparent border border-[#464646] outline-[#FFF6F2]"
                 value={newBill.name}
                 onChange={(e) =>
                   setNewBill({ ...newBill, name: e.target.value })
@@ -630,7 +912,7 @@ Answer based on the budget and bill data. Your response should only be a short s
               <input
                 type="number"
                 placeholder="Amount"
-                className="w-full p-2 pl-3 rounded bg-transparent border border-[#464646] outline-[#FFF6F2]"
+                className="w-full p-2 pl-3 rounded-xl bg-transparent border border-[#464646] outline-[#FFF6F2]"
                 value={newBill.amount}
                 onChange={(e) =>
                   setNewBill({ ...newBill, amount: e.target.value })
@@ -648,7 +930,7 @@ Answer based on the budget and bill data. Your response should only be a short s
                     }
                     dateFormat="MM/dd/yy"
                     placeholderText="MM/DD/YY"
-                    className="w-full p-2 pl-3 rounded bg-[#1a1a1a] border border-[#464646] text-white outline-[#FFF6F2]"
+                    className="w-full p-2 pl-3 rounded-xl bg-[#1a1a1a] border border-[#464646] text-white outline-[#FFF6F2]"
                   />
 
                   <svg
@@ -670,45 +952,58 @@ Answer based on the budget and bill data. Your response should only be a short s
 
                 {/* Bill dropdown */}
                 <div className="relative w-[60%]">
-                  <select
+                  <Listbox
                     value={newBill.priority}
-                    onChange={(e) => {
-                      setNewBill({ ...newBill, priority: e.target.value });
-                      setOpen(false);
-                    }}
+                    onChange={(val) => setNewBill({ ...newBill, priority: val })}
                     onClick={() => setOpen(!open)}
-                    className="w-full px-4 h-[2.8em] bg-transparent text-[#FFF6F2] border-[#464646] border-[0.063em] rounded appearance-none outline-none"
                   >
-                    {options.map((option) => (
-                      <option
-                        key={option}
-                        value={option}
-                        className="bg-[#464646] text-[#FFF6F2]"
+                    <div className="relative">
+                      {/* Dropdown closed state */}
+                      <Listbox.Button
+                        className="relative w-full cursor-default rounded-xl bg-transparent py-2 pl-3 pr-10 text-left text-[#FFF6F2] border border-[#464646] focus:outline-none focus:ring-2 focus:ring-[#FE7531]"
                       >
-                        {option}
-                      </option>
-                    ))}
-                  </select>
+                        <span className="block truncate">{newBill.priority}</span>
+                        <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                          <ChevronUpDownIcon className="h-5 w-5 text-[#FFF6F2]" />
+                        </span>
+                      </Listbox.Button>
 
-                  {/* Custom arrow icon */}
-                  <div className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className={`h-4 transition-transform duration-200 ${
-                        open ? "rotate-180" : ""
-                      }`}
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </div>
+                      {/* Dropdown open state */}
+                      <Listbox.Options
+                        className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-[#1a1a1a] py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+                      >
+                        {options.map((option) => (
+                          <Listbox.Option
+                            key={option}
+                            value={option}
+                            disabled={option === "All"}
+                            className={({ active, disabled }) =>
+                              `relative cursor-default select-none py-2 pl-10 pr-4 ${disabled
+                                ? "opacity-40 cursor-not-allowed" // style for disabled
+                                : active
+                                  ? "bg-[#FE7531] text-white"
+                                  : "text-[#FFF6F2]"
+                              }`
+                            }
+                          >
+                            {({ selected }) => (
+                              <>
+                                <span
+                                  className={`block truncate ${selected ? 'font-medium' : 'font-normal'
+                                    }`}
+                                >
+                                  {option}
+                                </span>
+                                {selected && (
+                                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-white"></span>
+                                )}
+                              </>
+                            )}
+                          </Listbox.Option>
+                        ))}
+                      </Listbox.Options>
+                    </div>
+                  </Listbox>
                 </div>
               </div>
 
