@@ -130,13 +130,12 @@ function Settings() {
           {/* Settings list */}
           <div className="flex flex-col gap-2">
             {/* Edit Profile */}
-            <div className="flex flex-row justify-between align-middle w-[100%] bg-[#111111] border-[#464646] border-[0.063em] rounded-[1.25em] p-[1.1em]">
+            <Link to="/profile" className="flex flex-row justify-between align-middle w-[100%] bg-[#111111] border-[#464646] border-[0.063em] rounded-[1.25em] p-[1.1em] active:border-[#FE7531] active:scale-95 ease-in-out duration-100">
               <div className="flex flex-col">
                 <h3 className="text-[1.25rem] font-bold">Profile</h3>
                 <p className="text-[0.75rem]">Edit personal information</p>
               </div>
-              <a
-                href="/profile"
+              <div
                 className="flex items-center justify-center px-4 py-2 text-[#e7deda] rounded-full active:scale-90"
               >
                 <svg
@@ -153,16 +152,15 @@ function Settings() {
                     d="M9 5l7 7-7 7"
                   />
                 </svg>
-              </a>
-            </div>
+              </div>
+            </Link>
             {/* History page */}
-            <div className="flex flex-row justify-between align-middle w-[100%] bg-[#111111] border-[#464646] border-[0.063em] rounded-[1.25em] p-[1.1em]">
+            <Link to="/history" className="flex flex-row justify-between align-middle w-[100%] bg-[#111111] border-[#464646] border-[0.063em] active:border-[#FE7531] rounded-[1.25em] p-[1.1em] active:scale-95 ease-in-out duration-100">
               <div className="flex flex-col">
                 <h3 className="text-[1.25rem] font-bold">History</h3>
                 <p className="text-[0.75rem]">See all your paid bills here</p>
               </div>
-              <a
-                href="/history"
+              <div
                 className="flex items-center justify-center px-4 py-2 text-[#e7deda] rounded-full active:scale-90"
               >
                 <svg
@@ -179,8 +177,8 @@ function Settings() {
                     d="M9 5l7 7-7 7"
                   />
                 </svg>
-              </a>
-            </div>
+              </div>
+            </Link>
             {/* Notifications */}
             <div className="flex flex-row justify-between items-center w-full bg-[#111111] border-[#464646] border-[0.063em] rounded-[1.25em] p-[1.1em]">
               <div className="flex flex-col">
@@ -209,12 +207,12 @@ function Settings() {
           </div>
 
         </div>
-        <a
-          href="/"
-          className="flex align-middle justify-center font-bold underline text-[1.25rem]"
+        <Link
+          to="/"
+          className="flex align-middle justify-center font-bold underline text-[1.25rem] active:scale-95 duration-100"
         >
           Sign Out
-        </a>
+        </Link>
       </div>
     </>
   );
