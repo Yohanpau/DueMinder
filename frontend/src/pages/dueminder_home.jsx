@@ -84,6 +84,7 @@ function BillCard({ bill, onEdit, onDelete }) {
 // Main component
 export default function Home() {
   const datePickerRef = useRef(null);
+  const [selected, setSelected] = useState("All"); // Dropdown selection
 
   // Bills information
   const [bills, setBills] = useState(() => {
@@ -92,7 +93,7 @@ export default function Home() {
   });
 
   //getting bills after authentication
-   useEffect(() => {
+  useEffect(() => {
     const fetchBills = async () => {
       const token = localStorage.getItem("token");
       const res = await fetch("http://localhost:3000/bills", {
@@ -124,35 +125,8 @@ export default function Home() {
   //For both add and edit bill
   const today = new Date().toISOString().split("T")[0];
 
-  //Editing
-  const [editingBill, setEditingBill] = useState(null);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editBill, setEditBill] = useState({
-    name: "",
-    amount: "",
-    dueDate: today,
-    priority: "All",
-  });
-
-  // State for adding bill modal
-  const defaultNewBill = {
-    name: "",
-    amount: "",
-    dueDate: new Date(),
-    priority: "Medium",
-  };
-  const [newBill, setNewBill] = useState(defaultNewBill);
-  const [showModal, setShowModal] = useState(false);
-
-  // Priority filter
-  const [selected, setSelected] = useState("All");
-
   // Search bar
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Compute the total amount of bills
-  const totalAmount = bills.reduce((sum, bill) => sum + Number(bill.amount), 0);
-  const remaining = budget - totalAmount;
 
   // Filters bills based on priority and search
   const filteredBills = bills.filter((bill) => {
@@ -271,30 +245,30 @@ Answer based on the budget and bill data. Your response should only be a short s
   };
 
   const handleSubmit = async () => {
-  if (editingBill) {
-    try {
-      // Make sure dueDate is saved in correct format
-      const payload = {
-        ...newBill,
-        dueDate: new Date(newBill.dueDate).toISOString(),
-      };
+    if (editingBill) {
+      try {
+        // Make sure dueDate is saved in correct format
+        const payload = {
+          ...newBill,
+          dueDate: new Date(newBill.dueDate).toISOString(),
+        };
 
-      const response = await api.put(`/bills/${editingBill.id}`, payload);
+        const response = await api.put(`/bills/${editingBill.id}`, payload);
 
-      // Update state instantly (real-time effect)
-      setBills((prev) =>
-        prev.map((bill) =>
-          bill.id === editingBill.id ? response.data : bill
-        )
-      );
+        // Update state instantly (real-time effect)
+        setBills((prev) =>
+          prev.map((bill) =>
+            bill.id === editingBill.id ? response.data : bill
+          )
+        );
 
-      setEditingBill(null);
-      setShowEditModal(false);
-    } catch (error) {
-      console.error("Error updating bill:", error);
+        setEditingBill(null);
+        setShowEditModal(false);
+      } catch (error) {
+        console.error("Error updating bill:", error);
+      }
     }
-  }
-};
+  };
 
   //Deleting
   const [deleteBill, setDeleteBill] = useState(null);
@@ -379,19 +353,17 @@ Answer based on the budget and bill data. Your response should only be a short s
   // For priority filter
   const [selectedPriority, setSelectedPriority] = useState("All");
 
-  const [selected, setSelected] = useState("All"); // Dropdown selection
+  const closeModal = () => {
+    setShowEditModal(false);
+    setEditingBill(null);
+    setNewBill({
+      name: "",
+      amount: "",
+      dueDate: "",
+      priority: "All",
+    });
+  };
 
-  // Search bar
-  const [searchQuery, setSearchQuery] = useState("");
-
-  // Filters bills base on priority
-  const filteredBills = bills.filter((bill) => {
-    const matchesPriority = selected === "All" || bill.priority === selected;
-    const matchesSearch =
-      bill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      bill.amount.toString().includes(searchQuery);
-    return matchesPriority && matchesSearch;
-  });
 
   return (
     <>
@@ -1015,14 +987,14 @@ Answer based on the budget and bill data. Your response should only be a short s
                   Add
                 </button>
                 <button
-                onClick={() => {
-                  setShowModal(false);
-                  setNewBill(defaultNewBill); // reset form properly
-                }}
-                className="w-[50%] py-2 font-bold bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full"
-              >
-                Cancel
-              </button>
+                  onClick={() => {
+                    setShowModal(false);
+                    setNewBill(defaultNewBill); // reset form properly
+                  }}
+                  className="w-[50%] py-2 font-bold bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           </div>
