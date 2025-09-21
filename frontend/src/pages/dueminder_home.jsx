@@ -493,7 +493,7 @@ Answer based on the budget and bill data. Your response should only be a short s
                   }
                   placeholderText="MM/DD/YY"
                   dateFormat="MM/dd/yy"
-                  className="w-[142.42%] p-3 pl-3 rounded-xl bg-[#1a1a1a] border border-[#464646] text-white outline-[#FE7531]"
+                  className="w-[164%] p-3 pl-3 rounded-xl bg-[#1a1a1a] border border-[#464646] text-white outline-[#FE7531]"
                 />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -501,7 +501,7 @@ Answer based on the budget and bill data. Your response should only be a short s
                   viewBox="0 0 24 24"
                   strokeWidth="1.5"
                   stroke="currentColor"
-                  className="w-7 h-8 text-white opacity-60 absolute right-3 top-[2.2em]"
+                  className="w-7 h-8 text-white opacity-60 absolute right-4 top-[2.5em]"
                 >
                   <path
                     strokeLinecap="round"
@@ -662,7 +662,7 @@ Answer based on the budget and bill data. Your response should only be a short s
               id="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-[2.5em] w-[100%] p-[0.775em] rounded-[0.625em] bg-transparent border-[#464646] border-[0.063em] outline-[#FFF6F2]"
+              className="h-[2.5em] w-[100%] p-[0.775em] rounded-[0.625em] bg-transparent border-[#464646] border-[0.063em] outline-[#FE7531]"
             />
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -687,7 +687,7 @@ Answer based on the budget and bill data. Your response should only be a short s
               <select
                 value={selected}
                 onChange={(e) => setSelected(e.target.value)}
-                className="flex w-32 items-center justify-between gap-2 px-4 h-[2.5em] bg-transparent text-[#FFF6F2] border-[#464646] border-[0.063em] rounded-[0.625em] appearance-none outline-none"
+                className="flex w-32 items-center justify-between gap-2 px-4 h-[2.5em] bg-transparent text-[#FFF6F2] border-[#464646] border-[0.063em] rounded-[0.625em] appearance-none outline-[#FE7531]"
               >
                 {options.map((option) => (
                   // Dropdown options
