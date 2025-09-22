@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import DueMinderAIUI from "./dueminder.conversation";
 import EmailReminderHandler from "./EmailReminderHandler";
@@ -63,7 +63,7 @@ function BillCard({ bill, onEdit, onDelete, onPaid }) {
               </button>
               <button
                 onClick={() => {
-                  onPaid(bill);      // ✅ use the prop
+                  onPaid(bill);
                   setShowMenu(false);
                 }}
                 className="w-full px-3 py-1 text-left text-[#FFF6F2] active:bg-gray-100 active:rounded-lg active:text-[#FE7531]"
@@ -83,9 +83,10 @@ function BillCard({ bill, onEdit, onDelete, onPaid }) {
   );
 }
 
+
 // Main component
 export default function Home() {
- // Bills information
+  // Bills information
   const [bills, setBills] = useState(() => {
     const stored = localStorage.getItem("bills");
     return stored ? JSON.parse(stored) : [];
@@ -94,38 +95,19 @@ export default function Home() {
   // Sets the budget
   const [budget, setBudget] = useState(0);
 
-  //getting bills after authentication
-  useEffect(() => {
-    const fetchBills = async () => {
-      const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:3000/bills", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await res.json();
-      setBills(data);
-    };
-
-    fetchBills();
-  }, []);
-
   // AI
   const [chatbotOpen, setChatbotOpen] = useState(false);
+  // Suggestion Pop-up
   const [suggestionMessage, setSuggestionMessage] = useState(null);
 
   // Suggestion Prompt
   const generateShortPrompt = (bills, budget) => {
-    const billText = bills
-      .map(
-        (b) =>
-          `- ${b.name} (Priority: ${b.priority}) due on ${b.dueDate} with amount ₱${b.amount}`
-      )
-      .join("\n");
+    const billText = bills.map(
+      (b) =>
+        `- ${b.name} (Priority: ${b.priority}) due on ${b.dueDate} with amount ₱${b.amount}`
+    ).join("\n");
 
-    const budgetText = `The user's current budget is ₱${parseFloat(
-      budget || 0
-    ).toFixed(2)}.`;
+    const budgetText = `The user's current budget is ₱${parseFloat(budget || 0).toFixed(2)}.`;
 
     return `You are DueMinder, a helpful assistant that assists users in managing bills, subscriptions, and reminders.
 
@@ -137,7 +119,7 @@ ${budgetText}
 Answer based on the budget and bill data. Your response should only be a short sentence like a reminder.`;
   };
 
-  // Suggestion AI Logic
+  //Suggestion AI Logic
   useEffect(() => {
     let isCancelled = false;
     let hideTimeout, interval;
@@ -153,10 +135,9 @@ Answer based on the budget and bill data. Your response should only be a short s
         });
 
         const data = await res.json();
-        const suggestion =
-          data.reply.length > 150
-            ? data.reply.slice(0, 147) + "..."
-            : data.reply;
+        const suggestion = data.reply.length > 150
+          ? data.reply.slice(0, 147) + "..."
+          : data.reply;
 
         if (!isCancelled && suggestion) {
           setSuggestionMessage(suggestion);
@@ -177,7 +158,7 @@ Answer based on the budget and bill data. Your response should only be a short s
     // Then repeat every 30 minutes
     interval = setInterval(() => {
       fetchAndShowSuggestion();
-    }, 30 * 60 * 1000);
+    }, 30 * 60 * 1000); // 30 minutes
 
     return () => {
       isCancelled = true;
@@ -185,19 +166,6 @@ Answer based on the budget and bill data. Your response should only be a short s
       clearInterval(interval);
     };
   }, [bills, budget]);
-
-  // Fetch bills from backend
-  useEffect(() => {
-    const fetchBills = async () => {
-      try {
-        const response = await api.get("/bills");
-        setBills(response.data);
-      } catch (err) {
-        console.error("Error fetching bills", err);
-      }
-    };
-    fetchBills();
-  }, []);
 
   //Dropdown sorts
   const [open, setOpen] = useState(false);
@@ -377,6 +345,7 @@ Answer based on the budget and bill data. Your response should only be a short s
     JSON.parse(localStorage.getItem("history")) || []
   );
 
+
   return (
     <>
       <EmailReminderHandler />
@@ -389,8 +358,11 @@ Answer based on the budget and bill data. Your response should only be a short s
           budget={Number(budget)}
         />
         {/* Suggestion Pop-up */}
-        {suggestionMessage && <Suggestion message={suggestionMessage} />}
+        {(
+          suggestionMessage && <Suggestion message={suggestionMessage} />
+        )}
       </div>
+
 
       {/* Edit Modal */}
       {showEditModal && (
@@ -421,27 +393,24 @@ Answer based on the budget and bill data. Your response should only be a short s
             <div className="flex flex-row gap-2 w-full">
               <div className="flex flex-row relative">
                 <DatePicker
-                  ref={datePickerRef}
                   selected={newBill.dueDate ? new Date(newBill.dueDate) : null}
                   onChange={(date) =>
                     setNewBill({
                       ...newBill,
-                      dueDate: date.toISOString().split("T")[0], // YYYY-MM-DD format
+                      dueDate: date.toISOString().split("T")[0], // same format as before (YYYY-MM-DD)
                     })
                   }
                   placeholderText="MM/DD/YY"
                   dateFormat="MM/dd/yy"
                   className="w-full p-3 pl-4 rounded-xl bg-[#1a1a1a] border border-[#464646] text-white outline-[#FE7531]"
                 />
-
                 <svg
-                  onClick={() => datePickerRef.current.setOpen(true)}
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
                   strokeWidth="1.5"
                   stroke="currentColor"
-                  className="w-5 h-5 text-white opacity-60 absolute right-3 top-[0.7em] cursor-pointer"
+                  className="w-5 h-5 text-white opacity-60 absolute right-3 top-[0.7em]"
                 >
                   <path
                     strokeLinecap="round"
@@ -843,7 +812,7 @@ Answer based on the budget and bill data. Your response should only be a short s
           </div>
         </div>
         {/* Bills list */}
-        <div className="flex flex-col gap-[0.375em] h-full overflow-auto">
+        <div className="flex flex-col gap-2 h-full overflow-auto">
           {/* First Bill */}
           {filteredBills.map((bill) => (
             <BillCard
@@ -915,11 +884,8 @@ Answer based on the budget and bill data. Your response should only be a short s
                 {/* Bill due date */}
                 <div className="flex flex-row relative">
                   <DatePicker
-                    ref={datePickerRef}
                     selected={newBill.dueDate}
-                    onChange={(date) =>
-                      setNewBill({ ...newBill, dueDate: date })
-                    }
+                    onChange={(date) => setNewBill({ ...newBill, dueDate: date })}
                     dateFormat="MM/dd/yy"
                     placeholderText="MM/DD/YY"
                     className="w-full p-2 pl-3 rounded-xl bg-[#1a1a1a] border border-[#464646] text-white outline-[#FFF6F2]"
@@ -931,8 +897,7 @@ Answer based on the budget and bill data. Your response should only be a short s
                     viewBox="0 0 24 24"
                     strokeWidth="1.5"
                     stroke="currentColor"
-                    className="w-5 h-5 text-white opacity-60 absolute right-3 top-[0.7em] cursor-pointer"
-                    onClick={() => datePickerRef.current.setFocus()}
+                    className="w-5 h-5 text-white opacity-60 absolute right-3 top-[0.7em]"
                   >
                     <path
                       strokeLinecap="round"
@@ -1001,7 +966,19 @@ Answer based on the budget and bill data. Your response should only be a short s
 
               <div className="flex justify-center gap-2 pt-2 w-full">
                 <button
-                  onClick={handleAddBill}
+                  onClick={() => {
+                    const billWithId = {
+                      ...newBill,
+                      id: Date.now(),
+                    };
+                    const updatedBills = [...bills, billWithId];
+                    setBills(updatedBills);
+                    localStorage.setItem("bills", JSON.stringify(updatedBills));
+
+                    // Reset modal and input
+                    setShowModal(false);
+                    setNewBill(defaultNewBill);
+                  }}
                   className="w-[50%] py-2 bg-[#FE7531] active:opacity-80 rounded-full font-bold"
                 >
                   Add
@@ -1009,7 +986,7 @@ Answer based on the budget and bill data. Your response should only be a short s
                 <button
                   onClick={() => {
                     setShowModal(false);
-                    setNewBill(defaultNewBill); // reset form properly
+                    setNewBill(defaultNewBill);
                   }}
                   className="w-[50%] py-2 font-bold bg-transparent active:bg-gray-700 border-[#464646] border-[0.063em] rounded-full"
                 >
