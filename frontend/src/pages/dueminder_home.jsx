@@ -16,8 +16,9 @@ import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid' // opti
 import { useNavigate } from "react-router-dom";
 
 // Function for bill cards
-function BillCard({ bill, onEdit, onDelete }) {
+function BillCard({ bill, onEdit, onDelete, onPaid }) {
   const [showMenu, setShowMenu] = useState(false);
+  const location = useLocation();
 
   return (
     <div className="flex flex-col justify-between align-middle h-[30%] w-[100%] bg-[#111111] border-[#464646] border-[0.063em] rounded-[1.25em] p-[1.1em]">
