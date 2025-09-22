@@ -533,7 +533,7 @@ Answer based on the budget and bill data. Your response should only be a short s
                   onChange={(date) =>
                     setNewPaidBill({
                       ...newPaidBill,
-                      dueDate: date,   // ← keep as Date
+                      dueDate: date,
                     })
                   }
                   placeholderText="MM/DD/YY"
