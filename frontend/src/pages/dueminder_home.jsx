@@ -377,20 +377,6 @@ Answer based on the budget and bill data. Your response should only be a short s
   // For priority filter
   const [selectedPriority, setSelectedPriority] = useState("All");
 
-  const [selected, setSelected] = useState("All"); // Dropdown selection
-
-  // Search bar
-  const [searchQuery, setSearchQuery] = useState("");
-
-  // Filters bills base on priority
-  const filteredBills = bills.filter((bill) => {
-    const matchesPriority = selected === "All" || bill.priority === selected;
-    const matchesSearch =
-      bill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      bill.amount.toString().includes(searchQuery);
-    return matchesPriority && matchesSearch;
-  });
-
   const [history, setHistory] = useState(
     JSON.parse(localStorage.getItem("history")) || []
   );
