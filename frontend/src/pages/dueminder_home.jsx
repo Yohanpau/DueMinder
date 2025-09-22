@@ -267,32 +267,35 @@ Answer based on the budget and bill data. Your response should only be a short s
 
   const closePaidModal = () => setShowPaidModal(false);
 
-  // inside Home component
-const handlePaid = () => {
-  if (!newPaidBill.dueDate || !newPaidBill.paidOptions || !selectedBill) return;
+  const handlePaid = () => {
+    if (!newPaidBill.dueDate || !newPaidBill.paidOptions || !selectedBill) return;
 
-  const paidBill = {
-    ...selectedBill,
-    paidDate: newPaidBill.dueDate,
-    paidOptions: newPaidBill.paidOptions,
-    status: "Paid",
+    const paymentDate = new Date(newPaidBill.dueDate);
+    const dueDate = new Date(selectedBill.dueDate);
+    const status = paymentDate <= dueDate ? "Paid" : "Overdue";
+
+    const paidBill = {
+      ...selectedBill,
+      paidDate: newPaidBill.dueDate,
+      paidOptions: newPaidBill.paidOptions,
+      status,
+    };
+
+    // Save to history
+    const existingHistory = JSON.parse(localStorage.getItem("history")) || [];
+    localStorage.setItem("history", JSON.stringify([...existingHistory, paidBill]));
+
+    // Remove from active bills and update localStorage
+    setBills(prev => {
+      const updated = prev.filter(b => b.id !== selectedBill.id);
+      localStorage.setItem("bills", JSON.stringify(updated));
+      return updated;
+    });
+
+    setShowPaidModal(false);
+    setShowPaidConfirmation(false);
+    navigate("/history");
   };
-
-  // Save to history
-  const existingHistory = JSON.parse(localStorage.getItem("history")) || [];
-  localStorage.setItem("history", JSON.stringify([...existingHistory, paidBill]));
-
-  // Remove from active bills and update localStorage
-  setBills(prev => {
-    const updated = prev.filter(b => b.id !== selectedBill.id);
-    localStorage.setItem("bills", JSON.stringify(updated));
-    return updated;
-  });
-
-  setShowPaidModal(false);
-  setShowPaidConfirmation(false);
-  navigate("/history");
-};
 
   // Adding bill modal
   const defaultNewBill = {
