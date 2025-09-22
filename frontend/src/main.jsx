@@ -98,7 +98,6 @@ const MainApp = () => (
   </BrowserRouter>
 );
 
-// Added this block of code because without this nothing will show up on the browser because the components are not being rendered anywhere.
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <MainApp />

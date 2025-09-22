@@ -2,10 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-#root {
-  background-color: #010101;;
-}
-
 body {
   background-color: #010101;
   margin-left: 1.5em;
@@ -46,19 +42,4 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   40% {
     transform: translateY(-4px);
   }
-}
-
-.fade-enter {
-  opacity: 0;
-}
-.fade-enter-active {
-  opacity: 1;
-  transition: opacity 300ms ease-in;
-}
-.fade-exit {
-  opacity: 1;
-}
-.fade-exit-active {
-  opacity: 0;
-  transition: opacity 300ms ease-out;
 }

@@ -50,18 +50,18 @@ function Settings() {
       .catch((err) => console.error("Email error:", err));
   };
 
-
-  useEffect(() => {
-    console.log("Loaded bills:", bills);
-  }, [bills]);
-
-  useEffect(() => {
-    console.log("Notifications enabled:", isOn);
-  }, [isOn]);
-
-  useEffect(() => {
-    console.log("Raw stored email:", localStorage.getItem("userEmail"));
-  }, []);
+  
+    useEffect(() => {
+      console.log("Loaded bills:", bills);
+    }, [bills]);
+  
+    useEffect(() => {
+      console.log("Notifications enabled:", isOn);
+    }, [isOn]);
+  
+    useEffect(() => {
+      console.log("Raw stored email:", localStorage.getItem("userEmail"));
+    }, []);
 
   return (
     <>
@@ -123,7 +123,7 @@ function Settings() {
 
       {/* Settings list */}
       <div className="text-[#e7deda] flex flex-col gap-[0.6em] w-[100%] h-[80vh] justify-between">
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           {/* Title */}
           <h2 className="text-[1.5em] font-bold">Settings</h2>
 
@@ -205,7 +205,6 @@ function Settings() {
               </div>
             </div>
           </div>
-
         </div>
         <Link
           to="/"
