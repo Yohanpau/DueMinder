@@ -529,11 +529,11 @@ Answer based on the budget and bill data. Your response should only be a short s
               <div className="relative w-full mb-5">
                 <p className="mb-2">Date of Payment</p>
                 <DatePicker
-                  selected={newPaidBill.dueDate ? new Date(newPaidBill.dueDate) : null}
+                  selected={newPaidBill.dueDate}
                   onChange={(date) =>
                     setNewPaidBill({
                       ...newPaidBill,
-                      dueDate: date.toISOString().split("T")[0], // same format as before (YYYY-MM-DD)
+                      dueDate: date,   // ← keep as Date
                     })
                   }
                   placeholderText="MM/DD/YY"
