@@ -110,34 +110,9 @@ export default function Home() {
     fetchBills();
   }, []);
 
-  // Budget
-  const [budget, setBudget] = useState(() => {
-    const storedBudget = localStorage.getItem("userBudget");
-    return storedBudget ? JSON.parse(storedBudget) : 0;
-  });
-
   // AI
   const [chatbotOpen, setChatbotOpen] = useState(false);
   const [suggestionMessage, setSuggestionMessage] = useState(null);
-
-  //Dropdown sorts
-  const [open, setOpen] = useState(false);
-  const options = ["All", "High", "Medium", "Low"];
-
-  //For both add and edit bill
-  const today = new Date().toISOString().split("T")[0];
-
-  // Search bar
-  const [searchQuery, setSearchQuery] = useState("");
-
-  // Filters bills based on priority and search
-  const filteredBills = bills.filter((bill) => {
-    const matchesPriority = selected === "All" || bill.priority === selected;
-    const matchesSearch =
-      bill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      bill.amount.toString().includes(searchQuery);
-    return matchesPriority && matchesSearch;
-  });
 
   // Suggestion Prompt
   const generateShortPrompt = (bills, budget) => {
@@ -224,6 +199,14 @@ Answer based on the budget and bill data. Your response should only be a short s
     fetchBills();
   }, []);
 
+  //Dropdown sorts
+  const [open, setOpen] = useState(false);
+  const options = ["All", "High", "Medium", "Low"];
+  const paidOptions = ["Cash", "Bank", "E-Wallet"];
+
+  //For both add and edit bill
+  const today = new Date().toISOString().split("T")[0];
+
   //Editing
   const [editingBill, setEditingBill] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -246,29 +229,27 @@ Answer based on the budget and bill data. Your response should only be a short s
     setShowEditModal(true);
   };
 
-  const handleSubmit = async () => {
+  const closeModal = () => {
+    setShowEditModal(false);
+    setEditingBill(null);
+    setNewBill({
+      name: "",
+      amount: "",
+      dueDate: "",
+      priority: "All",
+    });
+  };
+
+  const handleSubmit = () => {
     if (editingBill) {
-      try {
-        // Make sure dueDate is saved in correct format
-        const payload = {
-          ...newBill,
-          dueDate: new Date(newBill.dueDate).toISOString(),
-        };
-
-        const response = await api.put(`/bills/${editingBill.id}`, payload);
-
-        // Update state instantly (real-time effect)
-        setBills((prev) =>
-          prev.map((bill) =>
-            bill.id === editingBill.id ? response.data : bill
-          )
-        );
-
-        setEditingBill(null);
-        setShowEditModal(false);
-      } catch (error) {
-        console.error("Error updating bill:", error);
-      }
+      // Editing existing bill
+      const updatedBills = bills.map((bill) =>
+        bill.id === editingBill.id ? { ...editingBill, ...newBill } : bill
+      );
+      setBills(updatedBills);
+      localStorage.setItem("bills", JSON.stringify(updatedBills));
+      setEditingBill(null);
+      setShowEditModal(false);
     }
   };
 
@@ -378,10 +359,23 @@ Answer based on the budget and bill data. Your response should only be a short s
   // For priority filter
   const [selectedPriority, setSelectedPriority] = useState("All");
 
+  const [selected, setSelected] = useState("All"); // Dropdown selection
+
+  // Search bar
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filters bills base on priority
+  const filteredBills = bills.filter((bill) => {
+    const matchesPriority = selected === "All" || bill.priority === selected;
+    const matchesSearch =
+      bill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      bill.amount.toString().includes(searchQuery);
+    return matchesPriority && matchesSearch;
+  });
+
   const [history, setHistory] = useState(
     JSON.parse(localStorage.getItem("history")) || []
   );
-
 
   return (
     <>
