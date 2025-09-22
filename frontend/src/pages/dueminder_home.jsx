@@ -21,7 +21,6 @@ function BillCard({ bill, onEdit, onDelete, onPaid }) {
   const location = useLocation();
 
   return (
-
     <div className="flex flex-col justify-between align-middle h-[30%] w-[100%] bg-[#111111] border-[#464646] border-[0.063em] rounded-[1.25em] p-[1.1em]">
       <div className="flex flex-row justify-between">
         <h3 className="text-[1.25rem] font-bold">{bill.name}</h3>
@@ -64,7 +63,7 @@ function BillCard({ bill, onEdit, onDelete, onPaid }) {
               </button>
               <button
                 onClick={() => {
-                  onPaid(bill);      // ✅ use the prop
+                  onPaid(bill);
                   setShowMenu(false);
                 }}
                 className="w-full px-3 py-1 text-left text-[#FFF6F2] active:bg-gray-100 active:rounded-lg active:text-[#FE7531]"
