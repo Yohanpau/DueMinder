@@ -19,7 +19,6 @@ import api from "./api"; // Axios instance
 // Function for bill cards
 function BillCard({ bill, onEdit, onDelete, onPaid }) {
   const [showMenu, setShowMenu] = useState(false);
-  const location = useLocation();
 
   return (
     <div className="flex flex-col justify-between align-middle h-[30%] w-[100%] bg-[#111111] border-[#464646] border-[0.063em] rounded-[1.25em] p-[1.1em]">
@@ -109,7 +108,33 @@ export default function Home() {
 
   const closePaidModal = () => setShowPaidModal(false);
 
+  const handlePaid = () => {
+    if (!newPaidBill.dueDate || !newPaidBill.paidOptions || !selectedBill) return;
 
+    const paymentDate = new Date(newPaidBill.dueDate);
+    const dueDate = new Date(selectedBill.dueDate);
+    const status = paymentDate <= dueDate ? "Paid" : "Overdue";
+
+    const paidBill = {
+      ...selectedBill,
+      paidDate: newPaidBill.dueDate,
+      paidOptions: newPaidBill.paidOptions,
+      status,
+    };
+
+    const existingHistory = JSON.parse(localStorage.getItem("history")) || [];
+    localStorage.setItem("history", JSON.stringify([...existingHistory, paidBill]));
+
+    setBills((prev) => {
+      const updated = prev.filter((b) => b.id !== selectedBill.id);
+      localStorage.setItem("bills", JSON.stringify(updated));
+      return updated;
+    });
+
+    setShowPaidModal(false);
+    setShowPaidConfirmation(false);
+    navigate("/history");
+  };
 
   // Budget  // Don't Touch
   const [budget, setBudget] = useState(() => {
@@ -224,46 +249,6 @@ Answer based on the budget and bill data. Your response should only be a short s
       }
     }
 
-    const handlePaid = async () => {
-      if (!newPaidBill.dueDate || !newPaidBill.paidOptions || !selectedBill) return;
-
-      // 1️⃣ Determine if payment is on time or overdue
-      const paymentDate = new Date(newPaidBill.dueDate);
-      const dueDate = new Date(selectedBill.dueDate);
-      const status = paymentDate <= dueDate ? "Paid" : "Overdue";
-
-      // 2️⃣ Create history record (keep the same ID for API/db)
-      const paidBill = {
-        ...selectedBill,                // keeps original id
-        paidDate: newPaidBill.dueDate,  // the chosen payment date
-        paidOptions: newPaidBill.paidOptions,
-        status,
-      };
-
-      // 3️⃣ Save to localStorage history
-      const existingHistory = JSON.parse(localStorage.getItem("history")) || [];
-      localStorage.setItem("history", JSON.stringify([...existingHistory, paidBill]));
-
-      // 4️⃣ Optional: Update the backend if you have an API
-      // try {
-      //   await api.put(`/bills/${selectedBill.id}`, { status, ...paidBill });
-      // } catch (err) {
-      //   console.error("API update failed:", err);
-      // }
-
-      // 5️⃣ Remove the bill from active list (home page) and localStorage
-      setBills(prevBills => {
-        const updated = prevBills.filter(b => b.id !== selectedBill.id);
-        localStorage.setItem("bills", JSON.stringify(updated));
-        return updated;
-      });
-
-      // 6️⃣ Close modal and go to History page
-      setShowPaidModal(false);
-      setShowPaidConfirmation(false);
-      navigate("/history");
-    };
-
     // Show first suggestion immediately
     fetchAndShowSuggestion();
 
@@ -323,39 +308,31 @@ Answer based on the budget and bill data. Your response should only be a short s
     setShowEditModal(true);
   };
 
-const handlePaid = () => {
-  if (!newPaidBill.dueDate || !newPaidBill.paidOptions || !selectedBill) return;
+  const handleSubmit = async () => {   // Don't Touch
+    if (editingBill) {
+      try {
+        // Make sure dueDate is saved in correct format
+        const payload = {
+          ...newBill,
+          dueDate: new Date(newBill.dueDate).toISOString(),
+        };
 
-  const paymentDate = new Date(newPaidBill.dueDate);
-  const dueDate = new Date(selectedBill.dueDate);
-  const status = paymentDate <= dueDate ? "Paid" : "Overdue";
+        const response = await api.put(`/bills/${editingBill.id}`, payload);
 
-  // Build the history record, keeping original ID
-  const paidBill = {
-    ...selectedBill,
-    paidDate: newPaidBill.dueDate,
-    paidOptions: newPaidBill.paidOptions,
-    status,
+        // Update state instantly (real-time effect)   // Don't Touch
+        setBills((prev) =>
+          prev.map((bill) =>
+            bill.id === editingBill.id ? response.data : bill
+          )
+        );
+
+        setEditingBill(null);
+        setShowEditModal(false);
+      } catch (error) {
+        console.error("Error updating bill:", error);
+      }
+    }
   };
-
-  // Save to history
-  const existingHistory = JSON.parse(localStorage.getItem("history")) || [];
-  localStorage.setItem("history", JSON.stringify([...existingHistory, paidBill]));
-
-  // Remove from active bills + update localStorage
-  setBills(prev => {
-    const updated = prev.filter(b => b.id !== selectedBill.id);
-    localStorage.setItem("bills", JSON.stringify(updated));
-    return updated;
-  });
-
-  // Show confirmation modal
-  setShowPaidModal(false);
-  setShowPaidConfirmation(false);
-  navigate("/history");
-};
-
-
 
   // --- Deleting state ---
   const [deleteBill, setDeleteBill] = useState(null);
@@ -704,7 +681,7 @@ const handlePaid = () => {
           <div className="w-[60%] max-w-md bg-[#111111] p-6 rounded-xl text-white border border-[#464646] relative"
           >
             <button
-              onClick={() => setShowPaidConfirmation(false)}
+              onClick={handlePaid}
               className="absolute top-3 right-3 text-[7.5vw] text-[#FE7531]"
             >
               <HiX />
