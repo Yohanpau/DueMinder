@@ -85,14 +85,14 @@ function BillCard({ bill, onEdit, onDelete, onPaid }) {
 
 // Main component
 export default function Home() {
-  const datePickerRef = useRef(null);
-  const [selected, setSelected] = useState("All"); // Dropdown selection
-
-  // Bills information
+ // Bills information
   const [bills, setBills] = useState(() => {
     const stored = localStorage.getItem("bills");
     return stored ? JSON.parse(stored) : [];
   });
+
+  // Sets the budget
+  const [budget, setBudget] = useState(0);
 
   //getting bills after authentication
   useEffect(() => {
