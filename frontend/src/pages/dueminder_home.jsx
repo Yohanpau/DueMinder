@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Listbox } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid' // optional icons
 import { useNavigate } from "react-router-dom";
+import api from "./api";
 
 // Function for bill cards
 function BillCard({ bill, onEdit, onDelete, onPaid }) {
@@ -268,27 +269,24 @@ Answer based on the budget and bill data. Your response should only be a short s
 
   const closePaidModal = () => setShowPaidModal(false);
 
-  const handlePaid = () => {
-    if (!newPaidBill.dueDate || !newPaidBill.paidOptions || !selectedBill) return;
+  const handlePaid = async () => {
+  if (!newPaidBill.dueDate || !newPaidBill.paidOptions || !selectedBill) return;
 
-    const paymentDate = new Date(newPaidBill.dueDate);
-    const dueDate = new Date(selectedBill.dueDate);
-    const status = paymentDate <= dueDate ? "Paid" : "Overdue";
+  const paymentDate = new Date(newPaidBill.dueDate);
+  const dueDate = new Date(selectedBill.dueDate);
+  const status = paymentDate <= dueDate ? "Paid" : "Overdue";
 
-    const paidBill = {
-      ...selectedBill,
+  try {
+    await api.post(`/payments/${selectedBill.id}`, {
+      amount: selectedBill.amount,
       paidDate: newPaidBill.dueDate,
       paidOptions: newPaidBill.paidOptions,
       status,
-    };
+    });
 
-    // Save to history
-    const existingHistory = JSON.parse(localStorage.getItem("history")) || [];
-    localStorage.setItem("history", JSON.stringify([...existingHistory, paidBill]));
-
-    // Remove from active bills and update localStorage
-    setBills(prev => {
-      const updated = prev.filter(b => b.id !== selectedBill.id);
+    // Update frontend state (remove from active bills)
+    setBills((prev) => {
+      const updated = prev.filter((b) => b.id !== selectedBill.id);
       localStorage.setItem("bills", JSON.stringify(updated));
       return updated;
     });
@@ -296,7 +294,11 @@ Answer based on the budget and bill data. Your response should only be a short s
     setShowPaidModal(false);
     setShowPaidConfirmation(false);
     navigate("/history");
-  };
+  } catch (err) {
+    console.error("Error making payment", err);
+  }
+};
+
 
   // Default state for adding a new bill
   const defaultNewBill = {
@@ -983,19 +985,7 @@ Answer based on the budget and bill data. Your response should only be a short s
 
               <div className="flex justify-center gap-2 pt-2 w-full">
                 <button
-                  onClick={() => {
-                    const billWithId = {
-                      ...newBill,
-                      id: Date.now(),
-                    };
-                    const updatedBills = [...bills, billWithId];
-                    setBills(updatedBills);
-                    localStorage.setItem("bills", JSON.stringify(updatedBills));
-
-                    // Reset modal and input
-                    setShowModal(false);
-                    setNewBill(defaultNewBill);
-                  }}
+                  onClick={handleAddBill}
                   className="w-[50%] py-2 bg-[#FE7531] active:opacity-80 rounded-full font-bold"
                 >
                   Add
