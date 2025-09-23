@@ -7,14 +7,17 @@ Managing bills can be overwhelming, especially when there are multiple due dates
 - Overview dashboard showing lists with upcoming payments, and total bills to pay.
 - Secure user authentication and data storage.
 - AI-powered summaries of current bills with smart insights and practical advice to help users make better financial decisions.
-
-## New Features
 - Real-time pop-up notifications to alert users of upcoming due dates and important updates.
 - Profile image upload feature to personalize user accounts.
 - Backend database integration for storing and managing user data securely.
 - Full CRUD API support for users, bills, budgets, and priorities.
 - AI integration through the database to provide personalized bill insights, budget tracking, and smart financial assistance.
 - AI response format for bills, delivering clear and structured insights.
+
+## New Feature
+- Paid button to record payment date and method for each bill.
+- History page showing bill name, amount, payment date, payment method, and status (on time or overdue).
+- Updated UI with page transitions, interactive buttons, and themed dropdowns for better user experience.
 
 ## How It Works 
 ### 1. User register and signs in to a dashboard in order to add bills with due dates and categories. 
