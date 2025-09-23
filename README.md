@@ -14,7 +14,7 @@ Managing bills can be overwhelming, especially when there are multiple due dates
 - AI integration through the database to provide personalized bill insights, budget tracking, and smart financial assistance.
 - AI response format for bills, delivering clear and structured insights.
 
-## New Feature
+## New Features
 - Paid button to record payment date and method for each bill.
 - History page showing bill name, amount, payment date, payment method, and status (on time or overdue).
 - Updated UI with page transitions, interactive buttons, and themed dropdowns for better user experience.
