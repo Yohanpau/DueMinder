@@ -1,0 +1,8 @@
+NextJS(Frontend) run `npx nx serve web`
+
+NestJS(Backend) run `npx nx serve api`
+
+Native(App)
+npx nx run mobile:ios   # for iOS simulator (macOS only)
+npx nx run mobile:android  # for Android emulator
+

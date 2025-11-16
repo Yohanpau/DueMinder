@@ -5,6 +5,27 @@
   "references": [
     {
       "path": "./data-access"
+    },
+    {
+      "path": "./web"
+    },
+    {
+      "path": "./mobile"
+    },
+    {
+      "path": "./api-e2e"
+    },
+    {
+      "path": "./api"
+    },
+    {
+      "path": "./libs"
+    },
+    {
+      "path": "./libs"
+    },
+    {
+      "path": "./libs"
     }
   ]
 }
