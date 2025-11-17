@@ -1,8 +1,9 @@
-NextJS(Frontend) run `npx nx serve web`
+NextJS(Frontend) run `nx start web`
 
-NestJS(Backend) run `npx nx serve api`
+NestJS(Backend) run `npx nx run @dueminder/api:serve`
 
 Native(App)
-npx nx run mobile:ios   # for iOS simulator (macOS only)
-npx nx run mobile:android  # for Android emulator
+nx start mobile
+nx run-ios mobile  # for iOS simulator (macOS only)
+nx run-android mobile # for Android emulator
 

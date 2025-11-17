@@ -1,0 +1,16 @@
+{
+  "name": "web",
+  "$schema": "node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": ".",
+  "projectType": "application",
+  "targets": {
+    "serve": {
+      "executor": "@nx/next:server",
+      "defaultConfiguration": "production",
+      "options": {
+        "buildTarget": "web:build",
+        "dev": true
+      }
+    }
+  }
+}
