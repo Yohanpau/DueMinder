@@ -7,3 +7,4 @@ nx start mobile
 nx run-ios mobile  # for iOS simulator (macOS only)
 nx run-android mobile # for Android emulator
 
+npx nx run-many -t build = to check if everything is running (including shared libraries)

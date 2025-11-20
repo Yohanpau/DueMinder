@@ -1,10 +1,10 @@
 {
-  "name": "@dueminder/api-e2e",
+  "name": "@dueminder/backend-e2e",
   "version": "0.0.1",
   "private": true,
   "nx": {
     "implicitDependencies": [
-      "@dueminder/api"
+      "@dueminder/backend"
     ],
     "targets": {
       "e2e": {
@@ -13,12 +13,12 @@
           "{projectRoot}/test-output/jest/coverage"
         ],
         "options": {
-          "jestConfig": "api-e2e/jest.config.cts",
+          "jestConfig": "apps/backend-e2e/jest.config.cts",
           "passWithNoTests": true
         },
         "dependsOn": [
-          "@dueminder/api:build",
-          "@dueminder/api:serve"
+          "@dueminder/backend:build",
+          "@dueminder/backend:serve"
         ]
       }
     }

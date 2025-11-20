@@ -7,10 +7,25 @@
       "path": "./data-access"
     },
     {
-      "path": "./api-e2e"
+      "path": "./libs"
     },
     {
-      "path": "./libs"
+      "path": "./apps/web"
+    },
+    {
+      "path": "./apps/mobile"
+    },
+    {
+      "path": "./apps-e2e"
+    },
+    {
+      "path": "./apps"
+    },
+    {
+      "path": "./apps/backend-e2e"
+    },
+    {
+      "path": "./apps/backend"
     }
   ]
 }

@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "nx": {
+    "name": "api",
     "targets": {
       "build": {
         "executor": "nx:run-commands",
@@ -11,7 +12,7 @@
           "args": [
             "--node-env=production"
           ],
-          "cwd": "api"
+          "cwd": "apps"
         },
         "configurations": {
           "development": {
@@ -28,8 +29,8 @@
         "cache": true,
         "executor": "@nx/js:prune-lockfile",
         "outputs": [
-          "{workspaceRoot}/api/dist/package.json",
-          "{workspaceRoot}/api/dist/package-lock.json"
+          "{workspaceRoot}/apps/dist/package.json",
+          "{workspaceRoot}/apps/dist/package-lock.json"
         ],
         "options": {
           "buildTarget": "build"
@@ -41,7 +42,7 @@
         ],
         "cache": true,
         "outputs": [
-          "{workspaceRoot}/api/dist/workspace_modules"
+          "{workspaceRoot}/apps/dist/workspace_modules"
         ],
         "executor": "@nx/js:copy-workspace-modules",
         "options": {
@@ -63,15 +64,15 @@
           "build"
         ],
         "options": {
-          "buildTarget": "@dueminder/api:build",
+          "buildTarget": "api:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "@dueminder/api:build:development"
+            "buildTarget": "api:build:development"
           },
           "production": {
-            "buildTarget": "@dueminder/api:build:production"
+            "buildTarget": "api:build:production"
           }
         }
       }
